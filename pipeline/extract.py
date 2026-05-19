@@ -22,6 +22,7 @@ def fetch_clinical_trials_rss(url: str = "https://clinicaltrials.gov/api/rss?dat
         logging.error(f"Error fetching clinical trials RSS feed: {e}")
         return None
 
+
 def remove_html_tags(text: str) -> str:
     """Remove HTML tags from text using regex pattern."""
     if not isinstance(text, str):
@@ -58,12 +59,17 @@ def format_feed_entries(entries: list) -> list:
     return formatted_entries
 
 
-if __name__ == "__main__":
-    setup_logging()
-    feed = fetch_clinical_trials_rss()
-    print(feed['entries'])  # Print the first entry to verify
+def extract(url: str = "https://clinicaltrials.gov/api/rss?dateField=LastUpdatePostDate") -> list[dict]:
+    """Extracts and formats the clinical trials RSS feed data."""
+    feed = fetch_clinical_trials_rss(url)
+    if feed is None:
+        logging.error("Failed to fetch clinical trials RSS feed.")
+        return []
     # Format entries to remove HTML tags
     cleaned_entries = format_feed_entries(feed['entries'])
-    # Print the first cleaned entry to verify
-    print("Cleaned first entry:")
-    #print(cleaned_entries[0])
+    return cleaned_entries
+
+
+if __name__ == "__main__":
+    setup_logging()
+    print(extract()[1])
