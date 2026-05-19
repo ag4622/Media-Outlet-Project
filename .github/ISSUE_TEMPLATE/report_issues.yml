@@ -1,0 +1,37 @@
+name: Report Issue
+description: Report a new issue
+title: "[ISSUE]: "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue! Please provide as much detail as possible.
+
+  - type: textarea
+    id: task
+    attributes:
+      label: Task
+      description: Please be specific
+      placeholder: Describe the task here
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: Describe the user story
+      placeholder: "As a ___, I want to be able to ___, so that I can ___"
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What is needed for this to be complete
+      placeholder: List the acceptance criteria
+    validations:
+      required: true
