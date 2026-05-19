@@ -36,7 +36,7 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint $(git ls-files '*.py') --fail-under=8.0
+          git ls-files '*.py' | xargs --no-run-if-empty pylint --fail-under=8.0
 
       - name: Test
         run: pytest
