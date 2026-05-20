@@ -36,24 +36,49 @@ def format_key_labels(entry: dict) -> dict:
     return formatted_entry
 
 
+def set_up_key_info(entry: dict, key_info: list) -> dict:
+    """Set up key information in entry for easier access."""
+    for key in key_info:
+        entry[key] = []
+    entry['status'] = ''
+    return entry
+
+
 def extract_key_information(entry: dict) -> dict:
     """Extract key information from the summary in entry."""
-
-    summary = entry.get('summary', '')
+    summary = entry.get('raw_description', '')
+    key_info = ['conditions', 'interventions', 'sponsors']
+    entry = set_up_key_info(entry, key_info)
     summary = summary.lstrip('<b>')
     split_summary = summary.split('<b>')
     split_summary = [part.split('</b>') for part in split_summary]
     for index, part in enumerate(split_summary):
         split_summary[index][1] = part[1].lstrip(
             ': ').rstrip('\n<br />').split('; ')
-    print(split_summary)
+        if part[0].lower() in key_info:
+            entry[part[0].lower()] = split_summary[index][1]
+        else:
+            if len(part) > 1:
+                entry['status'] = part[0]
+    return entry
+
+
+def remove_html_tags(text: str) -> str:
+    """Remove HTML tags from text using regex pattern."""
+    if not isinstance(text, str):
+        return text
+    # Remove all HTML tags
+    clean_text = re.sub(r'<[^>]*>', ',', text)
+    # Replace newlines with spaces
+    clean_text = clean_text.replace('\n', ' ')
+    return clean_text
 
 
 def format_feed_entries(entry: dict) -> dict:
     """Format the entry data to remove HTML tags like <b>, </b>, <br /> from feed entries."""
     # Remove HTML tags from summary fields
-    if 'summary' in entry:
-        entry['summary'] = remove_html_tags(entry['summary'])
+    if 'raw_description' in entry:
+        entry['raw_description'] = remove_html_tags(entry['raw_description'])
     # Remove HTML tags from title fields if needed
     if 'title' in entry:
         entry['title'] = remove_html_tags(entry['title'])
@@ -71,6 +96,8 @@ def transform(entries: list) -> list[dict]:
         entry = format_datetime_fields(
             entry, ['updated_parsed', 'published_parsed'])
         entry = format_key_labels(entry)
+        entry = extract_key_information(entry)
+        entry = format_feed_entries(entry)
         entry['last_ingested'] = last_ingested
         cleaned_entries.append(entry)
     logging.info(f"Transformed {len(cleaned_entries)} entries")
@@ -81,8 +108,7 @@ if __name__ == "__main__":
     setup_logging()
     entries = extract()
 
-    # cleaned_entries = transform(entries)
-    # print(cleaned_entries[0])
+    cleaned_entries = transform(entries)
+    print(cleaned_entries[0])
 
-    print(entries[1].get('summary', 'No summary available'))
-    extract_key_information(entries[1])
+    # print(extract_key_information(format_key_labels(entries[1])))
