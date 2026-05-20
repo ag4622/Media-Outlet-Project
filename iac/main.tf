@@ -15,8 +15,8 @@ resource "aws_dynamodb_table" "trials_table" {
   name         = "c23-ClinicalTrialTracker"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "trial_id"
-  range_key = "updated_at"
-  
+  range_key = "published_date"
+
   attribute {
     name = "trial_id"
     type = "S"
@@ -24,7 +24,7 @@ resource "aws_dynamodb_table" "trials_table" {
 
 
   attribute {
-    name = "updated_at"
+    name = "published_date"
     type = "S"
   }
 
