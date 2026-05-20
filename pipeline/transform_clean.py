@@ -30,7 +30,6 @@ def format_key_labels(entry: dict) -> dict:
         'id': 'trial_id',
         'summary': 'raw_description',
         'title': 'title',
-        'updated': 'updated_at',
         'published': 'published_date',
         'link': 'source_link'
     }
@@ -131,6 +130,6 @@ if __name__ == "__main__":
     feed_entries = extract()
 
     transformed_result = transform(feed_entries)
-    # print(transformed_result[0])
+    print(transformed_result[0])
 
     # print(extract_key_information(format_key_labels(feed_entries[1])))
