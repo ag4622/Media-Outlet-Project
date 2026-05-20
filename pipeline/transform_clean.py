@@ -16,7 +16,7 @@ def format_datetime_fields(entry: dict, datetime_fields: list) -> dict:
         try:
             field_name = field[:field.index('_')]
             entry[field_name] = datetime.fromtimestamp(
-                mktime(entry[field])).date()
+                mktime(entry[field])).date().strftime('%Y-%m-%d')
         except (KeyError, ValueError, OSError, OverflowError, TypeError):
             logging.warning(
                 "Could not convert field '%s' to date for entry ID: %s",
@@ -109,7 +109,7 @@ def transform(entries: list) -> list[dict]:
         return []
     logging.info("Starting transformation of %d entries", len(entries))
     result = []
-    last_ingested = datetime.now().date()
+    last_ingested = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for entry in entries:
         try:
             entry = format_datetime_fields(
@@ -131,6 +131,6 @@ if __name__ == "__main__":
     feed_entries = extract()
 
     transformed_result = transform(feed_entries)
-    # print(transformed_result[0])
+    print(transformed_result[0])
 
     # print(extract_key_information(format_key_labels(feed_entries[1])))
