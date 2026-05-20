@@ -13,6 +13,10 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context) -> dict:
     """Main Lambda function to orchestrate the ETL pipeline."""
+    logger.info("Request ID: %s", context.aws_request_id)
+    logger.info("Remaining time: %d ms",
+                context.get_remaining_time_in_millis())
+
     try:
         logger.info("Starting ETL pipeline")
         logger.info("Event: %s", event)
