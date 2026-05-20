@@ -1,3 +1,8 @@
+"""ETL pipeline for transforming clinical trials RSS feed data.
+
+Provides functions for formatting, cleaning, and extracting structured
+information from raw RSS feed entries.
+"""
 import logging
 import re
 from datetime import datetime
@@ -12,9 +17,10 @@ def format_datetime_fields(entry: dict, datetime_fields: list) -> dict:
             field_name = field[:field.index('_')]
             entry[field_name] = datetime.fromtimestamp(
                 mktime(entry[field])).date()
-        except:
+        except (KeyError, ValueError, OSError, OverflowError):
             logging.warning(
-                f"Could not convert field '{field}' to date for entry ID: {entry.get('trial_id', 'N/A')}")
+                "Could not convert field '%s' to date for entry ID: %s",
+                field, entry.get('trial_id', 'N/A'))
     return entry
 
 
@@ -88,7 +94,7 @@ def remove_html_tags(text: str) -> str:
 
 
 def format_feed_entries(entry: dict) -> dict:
-    """Format the entry data to remove HTML tags like <b>, </b>, <br /> from feed entries."""
+    """Format the entry data to remove HTML tags from feed entries."""
     if 'raw_description' in entry and entry['raw_description'] is not None:
         entry['raw_description'] = remove_html_tags(entry['raw_description'])
     if 'title' in entry and entry['title'] is not None:
@@ -97,12 +103,12 @@ def format_feed_entries(entry: dict) -> dict:
 
 
 def transform(entries: list) -> list[dict]:
-    """Transforms and cleans feed entries by removing HTML tags."""
+    """Transform and clean feed entries through formatting pipeline."""
     if not entries:
         logging.warning("No entries provided for transformation.")
         return []
-    logging.info(f"Starting transformation of {len(entries)} entries")
-    cleaned_entries = []
+    logging.info("Starting transformation of %d entries", len(entries))
+    result = []
     last_ingested = datetime.now().date()
     for entry in entries:
         try:
@@ -112,19 +118,19 @@ def transform(entries: list) -> list[dict]:
             entry = extract_key_information(entry)
             entry = format_feed_entries(entry)
             entry['last_ingested'] = last_ingested
-            cleaned_entries.append(entry)
-        except Exception as e:
+            result.append(entry)
+        except (KeyError, ValueError, AttributeError) as e:
             trial_id = entry.get('id', 'N/A')
-            logging.warning(f"Failed to transform entry {trial_id}: {e}")
-    logging.info(f"Successfully transformed {len(cleaned_entries)} entries")
-    return cleaned_entries
+            logging.warning("Failed to transform entry %s: %s", trial_id, e)
+    logging.info("Successfully transformed %d entries", len(result))
+    return result
 
 
 if __name__ == "__main__":
     setup_logging()
-    entries = extract()
+    feed_entries = extract()
 
-    cleaned_entries = transform(entries)
-    # print(cleaned_entries[0])
+    transformed_result = transform(feed_entries)
+    # print(transformed_result[0])
 
-    # print(extract_key_information(format_key_labels(entries[1])))
+    # print(extract_key_information(format_key_labels(feed_entries[1])))
