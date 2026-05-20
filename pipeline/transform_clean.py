@@ -30,7 +30,7 @@ def format_key_labels(entry: dict) -> dict:
         'id': 'trial_id',
         'summary': 'raw_description',
         'title': 'title',
-        'updated': 'last_updated',
+        'updated': 'updated_at',
         'published': 'published_date',
         'link': 'source_link'
     }
