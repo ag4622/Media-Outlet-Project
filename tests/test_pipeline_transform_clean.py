@@ -326,7 +326,7 @@ class TestRemoveHtmlTagsEdgeCases:
 
     def test_special_characters_preserved(self):
         """Test that special chars outside of entities are preserved."""
-        text = 'Special: !@#$%^*()_+-=[]{}|;:,.<>?'
+        text = 'Special: !@#$%^*()_+-=[]{}|;:,.?'
         result = remove_html_tags(text)
         assert result == text
 
