@@ -5,7 +5,7 @@ import logging
 from extract import extract
 from transform_clean import transform
 from vector_embedding import embedding_pipeline
-from load import load
+from loading import load
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
