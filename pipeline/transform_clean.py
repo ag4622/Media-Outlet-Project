@@ -38,26 +38,15 @@ def format_key_labels(entry: dict) -> dict:
 
 def extract_key_information(entry: dict) -> dict:
     """Extract key information from the summary in entry."""
+
     summary = entry.get('summary', '')
-
-    print(summary.index('<b>'))
-
-
-def remove_html_tags(text: str) -> str:
-    """Remove HTML tags from text using regex pattern."""
-    if not isinstance(text, str):
-        return text
-    # Remove all HTML tags
-    clean_text = re.sub(r'<[^>]*>', '', text)
-    # Replace common HTML entities
-    clean_text = clean_text.replace('&nbsp;', ' ')
-    clean_text = clean_text.replace('&amp;', '&')
-    clean_text = clean_text.replace('&lt;', '<')
-    clean_text = clean_text.replace('&gt;', '>')
-    clean_text = clean_text.replace('&quot;', '"')
-    # Replace newlines with spaces
-    clean_text = clean_text.replace('\n', ' ')
-    return clean_text
+    summary = summary.lstrip('<b>')
+    split_summary = summary.split('<b>')
+    split_summary = [part.split('</b>') for part in split_summary]
+    for index, part in enumerate(split_summary):
+        split_summary[index][1] = part[1].lstrip(
+            ': ').rstrip('\n<br />').split('; ')
+    print(split_summary)
 
 
 def format_feed_entries(entry: dict) -> dict:
@@ -91,8 +80,9 @@ def transform(entries: list) -> list[dict]:
 if __name__ == "__main__":
     setup_logging()
     entries = extract()
-    cleaned_entries = transform(entries)
-    print(cleaned_entries[0])
 
-    print(entries[0].get('summary', 'No summary available'))
-    extract_key_information(entries[0])
+    # cleaned_entries = transform(entries)
+    # print(cleaned_entries[0])
+
+    print(entries[1].get('summary', 'No summary available'))
+    extract_key_information(entries[1])
