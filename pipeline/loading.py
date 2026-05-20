@@ -3,7 +3,7 @@
 import logging
 import boto3
 
-TABLE_NAME = "c23-clinical-trials"
+TABLE_NAME = "c23-ClinicalTrialTracker"
 
 
 def setup_logging(logging_level=logging.INFO) -> None:
