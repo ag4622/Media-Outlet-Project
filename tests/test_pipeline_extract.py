@@ -33,7 +33,7 @@ class TestFetchClinicalTrialsRSS:
     @patch('extract.feedparser.parse')
     def test_fetch_clinical_trials_rss_exception(self, mock_parse):
         """Test exception handling in fetch."""
-        mock_parse.side_effect = Exception("Network error")
+        mock_parse.side_effect = OSError("Network error")
 
         result = fetch_clinical_trials_rss()
 
