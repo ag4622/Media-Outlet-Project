@@ -2,6 +2,7 @@
 
 import logging
 import boto3
+from botocore.exceptions import ClientError
 
 TABLE_NAME = "c23-ClinicalTrialTracker"
 
@@ -29,13 +30,13 @@ def load(data: list[dict]) -> None:
     for item in data:
         logging.debug("Loading item: %s", item)
         try:
-            db.put_item(Item=item,
-                        ConditionExpression="attribute_not_exists(updated_at)")
+            db.put_item(Item=item)
             logging.info(
                 "Inserted trial_id=%s updated_at=%s",
                 item["trial_id"],
                 item["updated_at"],
             )
-        except Exception as e:
-            logging.error("Error loading item: %s. Error: %s", item, e)
+        except ClientError as e:
+
+            logging.error("DynamoDB ClientError: %s", e)
     logging.info("Data loading completed.")
