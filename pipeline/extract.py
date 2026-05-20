@@ -10,7 +10,7 @@ def setup_logging(logging_level=logging.INFO):
     )
 
 
-def fetch_clinical_trials_rss(url: str = "https://clinicaltrials.gov/api/rss?dateField=LastUpdatePostDate"):
+def fetch_clinical_trials_rss(url: str = "https://clinicaltrials.gov/api/rss?dateField=LastUpdatePostDate") -> feedparser.FeedParserDict:
     """Fetches the clinical trials RSS feed from the specified URL."""
     logging.info(f"Fetching clinical trials RSS feed from {url}")
     try:
@@ -28,13 +28,15 @@ def extract(url: str = "https://clinicaltrials.gov/api/rss?dateField=LastUpdateP
     if feed is None:
         logging.error("Failed to fetch clinical trials RSS feed.")
         return []
-    return feed['entries']
+    logging.info(f"The keys in the feed are: {list(feed.keys())}")
+    entries = feed.get('entries')
+    if entries:
+        logging.info(f"Extracted {len(entries)} entries")
+    else:
+        logging.warning("No entries extracted from the feed.")
+    return entries
 
 
 if __name__ == "__main__":
     setup_logging()
     entries = extract()
-    print(f"Extracted {len(entries)} entries")
-    if entries:
-        print(f"First entry ID: {entries[0].get('id', 'N/A')}")
-
