@@ -40,6 +40,10 @@ def get_rag_text_chunk(data: dict):
 
 def get_embedding(text: str) -> list:
     """Generate embedding for text chunk using Bedrock."""
+    if not text:
+        logging.warning("Empty text provided for embedding generation.")
+        text = "N/A"
+
     try:
         response = bedrock_runtime.invoke_model(
             modelId='amazon.titan-embed-text-v2:0',

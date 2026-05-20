@@ -1,0 +1,87 @@
+from vector_embedding import (
+    get_rag_text_chunk, get_embedding, append_embedding
+)
+from decimal import Decimal
+
+
+def test_get_rag_text_chunk():
+    data = {
+        "trial_id": "NCT12345678",
+        "title": "A Study on the Effects of XYZ Drug",
+        "conditions": ["Condition A", "Condition B"],
+        "therapeutic_area": "Oncology",
+        "interventions": ["Intervention 1", "Intervention 2"],
+        "sponsors": ["Sponsor A", "Sponsor B"],
+        "status": "Completed",
+        "publication_date": "2023-01-01",
+        "source_link": "http://example.com/trial/NCT12345678",
+        "last_ingested": "2023-02-01",
+        "raw_description": "This is a detailed description of the clinical trial."
+    }
+    expected_output = (
+        f"trial_id: {data['trial_id']}. "
+        f"title: {data['title']}. "
+        f"conditions: {', '.join(data['conditions'])}. "
+        f"therapeutic_area: {data['therapeutic_area']}. "
+        f"interventions: {', '.join(data['interventions'])}. "
+        f"sponsors: {', '.join(data['sponsors'])}. "
+        f"status: {data['status']}. "
+        f"publication_date: {data['publication_date']}. "
+        f"source_link: {data['source_link']}. "
+        f"last_ingested: {data['last_ingested']}. "
+        f"raw_description: {data['raw_description']}"
+    )
+    assert get_rag_text_chunk(data) == expected_output
+
+
+def test_get_rag_text_chunk_missing_fields():
+    data = {
+        "trial_id": "NCT12345678",
+        "title": "A Study on the Effects of XYZ Drug",
+        # Missing conditions, therapeutic_area, interventions, sponsors
+        "status": "Completed",
+        "publication_date": "2023-01-01",
+        "source_link": "http://example.com/trial/NCT12345678",
+        "last_ingested": "2023-02-01",
+        "raw_description": "This is a detailed description of the clinical trial."
+    }
+    expected_output = (
+        f"trial_id: {data['trial_id']}. "
+        f"title: {data['title']}. "
+        f"conditions: N/A. "
+        f"therapeutic_area: N/A. "
+        f"interventions: N/A. "
+        f"sponsors: N/A. "
+        f"status: {data['status']}. "
+        f"publication_date: {data['publication_date']}. "
+        f"source_link: {data['source_link']}. "
+        f"last_ingested: {data['last_ingested']}. "
+        f"raw_description: {data['raw_description']}"
+    )
+    assert get_rag_text_chunk(data) == expected_output
+
+
+def test_get_embedding():
+    text = "This is a test text for embedding."
+    embedding = get_embedding(text)
+    assert isinstance(embedding, list)
+    assert all(isinstance(x, Decimal) for x in embedding)
+    assert len(embedding) == 512
+
+
+def test_get_embedding_empty_text():
+    text = ""
+    embedding = get_embedding(text)
+    assert isinstance(embedding, list)
+    assert all(isinstance(x, Decimal) for x in embedding)
+    assert len(embedding) == 512
+
+
+def test_append_embedding():
+    data = {"trial_id": "NCT12345678"}
+    embedding = [Decimal(0.1), Decimal(0.2), Decimal(0.3)]
+    expected_output = {
+        "trial_id": "NCT12345678",
+        "embedding": embedding
+    }
+    assert append_embedding(data, embedding) == expected_output
