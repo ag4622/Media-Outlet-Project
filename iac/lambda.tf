@@ -1,5 +1,5 @@
-resource "aws_iam_role" "c23_etl_lambda_role" {
-  name = "c23-ClinicalTrialTracker-etl-lambda-role"
+resource "aws_iam_role" "c23_ClinicalTrialTracker_lambda_role" {
+  name = "c23-ClinicalTrialTracker-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -74,7 +74,6 @@ resource "aws_iam_policy" "lambda_logs_policy" {
 }
 
 
-
 resource "aws_iam_role_policy_attachment" "attach_dynamodb_policy" {
   role       = aws_iam_role.c23_etl_lambda_role.name
   policy_arn = aws_iam_policy.dynamodb_policy.arn
@@ -100,4 +99,20 @@ resource "aws_ecr_repository" "lambda_etl_ecr" {
   image_scanning_configuration {
     scan_on_push = true
   }
+}
+
+
+resource "aws_lambda_function" "c23-ClinicalTrialTracker-lambda" {
+  function_name = "c23-ClinicalTrialTracker-lambda"
+  role          = aws_iam_role.c23_ClinicalTrialTracker_lambda_role.arn
+  package_type  = "Image"
+  image_uri     = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c23-abyssopelagic-lambda-ecr:latest"
+  image_config {
+    entry_point = ["/lambda-entrypoint.sh"]
+    command     = ["lambda_function.lambda_handler"]
+  }
+  memory_size = 512
+  timeout     = 30
+
+  architectures = ["x86_64"]
 }
