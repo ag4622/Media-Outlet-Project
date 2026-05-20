@@ -23,11 +23,11 @@ def load(data: list[dict]) -> None:
         SK = updated_at
     """
 
-    logging.info(f"Loading {len(data)} items into DynamoDB table {TABLE_NAME}")
+    logging.info("Loading %s items into DynamoDB table %s", len(data), TABLE_NAME)
 
     db = boto3.resource('dynamodb').Table(TABLE_NAME)
     for item in data:
-        logging.debug(f"Loading item: {item}")
+        logging.debug("Loading item: %s", item)
         try:
             db.put_item(Item=item,
                         ConditionExpression="attribute_not_exists(updated_at)")
@@ -37,5 +37,5 @@ def load(data: list[dict]) -> None:
                 item["updated_at"],
             )
         except Exception as e:
-            logging.error(f"Error loading item: {item}. Error: {e}")
+            logging.error("Error loading item: %s. Error: %s", item, e)
     logging.info("Data loading completed.")
