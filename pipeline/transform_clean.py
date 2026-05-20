@@ -1,5 +1,7 @@
 import logging
 import re
+from datetime import datetime
+from time import mktime
 from extract import extract, setup_logging
 
 
@@ -38,6 +40,18 @@ def format_feed_entries(entry: dict) -> dict:
     return entry
 
 
+def format_datetime_fields(entry: dict, datetime_fields: list) -> dict:
+    """Format time.struct_time fields to date format (without time)."""
+    for field in datetime_fields:
+        try:
+            field_name = field[:field.index('_')]
+            entry[field_name] = datetime.fromtimestamp(mktime(entry[field])).date()
+        except:
+            logging.warning(
+                f"Could not convert field '{field}' to date for entry ID: {entry.get('id', 'N/A')}")
+    return entry
+
+
 def transform(entries: list) -> list[dict]:
     """Transforms and cleans feed entries by removing HTML tags."""
     if not entries:
@@ -46,7 +60,10 @@ def transform(entries: list) -> list[dict]:
     cleaned_entries = []
     for entry in entries:
         entry = format_feed_entries(entry)
-        entry = remove_fields(entry, ['links', 'tags', 'authors'])
+        entry = format_datetime_fields(
+            entry, ['updated_parsed', 'published_parsed'])
+        entry = remove_fields(
+            entry, ['links', 'title_detail', 'summary_detail', 'updated_parsed', 'published_parsed'])
         cleaned_entries.append(entry)
     return cleaned_entries
 
@@ -59,4 +76,4 @@ if __name__ == "__main__":
         print(f"Transformed {len(cleaned_entries)} entries")
         if cleaned_entries:
             print(
-                f"First cleaned entry summary: {cleaned_entries[0]}")
+                f"First cleaned entry: {cleaned_entries[0]}")
