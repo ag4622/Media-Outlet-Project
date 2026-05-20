@@ -1,10 +1,13 @@
+"""Tests for vector_embedding.py."""
+
+from decimal import Decimal
 from vector_embedding import (
     get_rag_text_chunk, get_embedding, append_embedding
 )
-from decimal import Decimal
 
 
 def test_get_rag_text_chunk():
+    """Test get_rag_text_chunk with complete data."""
     data = {
         "trial_id": "NCT12345678",
         "title": "A Study on the Effects of XYZ Drug",
@@ -35,6 +38,7 @@ def test_get_rag_text_chunk():
 
 
 def test_get_rag_text_chunk_missing_fields():
+    """Test get_rag_text_chunk with missing optional fields."""
     data = {
         "trial_id": "NCT12345678",
         "title": "A Study on the Effects of XYZ Drug",
@@ -62,6 +66,7 @@ def test_get_rag_text_chunk_missing_fields():
 
 
 def test_get_embedding():
+    """Test get_embedding with a sample text."""
     text = "This is a test text for embedding."
     embedding = get_embedding(text)
     assert isinstance(embedding, list)
@@ -70,6 +75,7 @@ def test_get_embedding():
 
 
 def test_get_embedding_empty_text():
+    """Test get_embedding with empty text input."""
     text = ""
     embedding = get_embedding(text)
     assert isinstance(embedding, list)
@@ -78,6 +84,7 @@ def test_get_embedding_empty_text():
 
 
 def test_append_embedding():
+    """Test append_embedding with sample data and embedding."""
     data = {"trial_id": "NCT12345678"}
     embedding = [Decimal(0.1), Decimal(0.2), Decimal(0.3)]
     expected_output = {
