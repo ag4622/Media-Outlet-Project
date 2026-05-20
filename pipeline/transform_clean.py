@@ -47,18 +47,31 @@ def set_up_key_info(entry: dict, key_info: list) -> dict:
 def extract_key_information(entry: dict) -> dict:
     """Extract key information from the summary in entry."""
     summary = entry.get('raw_description', '')
+    # Handle None values gracefully
+    if summary is None:
+        summary = ''
     key_info = ['conditions', 'interventions', 'sponsors']
     entry = set_up_key_info(entry, key_info)
+
+    # If no HTML tags present, return with empty lists
+    if '<b>' not in summary or '</b>' not in summary:
+        return entry
+
     summary = summary.lstrip('<b>')
     split_summary = summary.split('<b>')
     split_summary = [part.split('</b>') for part in split_summary]
+
     for index, part in enumerate(split_summary):
+        if len(part) < 2:
+            continue
+        # Check if part[1] is non-empty BEFORE converting to list
+        has_content = part[1].strip()
         split_summary[index][1] = part[1].lstrip(
             ': ').rstrip('\n<br />').split('; ')
         if part[0].lower() in key_info:
             entry[part[0].lower()] = split_summary[index][1]
         else:
-            if len(part) > 1:
+            if len(part) > 1 and has_content:
                 entry['status'] = part[0]
     return entry
 
@@ -67,7 +80,7 @@ def remove_html_tags(text: str) -> str:
     """Remove HTML tags from text using regex pattern."""
     if not isinstance(text, str):
         return text
-    # Remove all HTML tags
+    # Replace all HTML tags with commas
     clean_text = re.sub(r'<[^>]*>', ',', text)
     # Replace newlines with spaces
     clean_text = clean_text.replace('\n', ' ')
@@ -76,11 +89,9 @@ def remove_html_tags(text: str) -> str:
 
 def format_feed_entries(entry: dict) -> dict:
     """Format the entry data to remove HTML tags like <b>, </b>, <br /> from feed entries."""
-    # Remove HTML tags from summary fields
-    if 'raw_description' in entry:
+    if 'raw_description' in entry and entry['raw_description'] is not None:
         entry['raw_description'] = remove_html_tags(entry['raw_description'])
-    # Remove HTML tags from title fields if needed
-    if 'title' in entry:
+    if 'title' in entry and entry['title'] is not None:
         entry['title'] = remove_html_tags(entry['title'])
     return entry
 
@@ -90,17 +101,22 @@ def transform(entries: list) -> list[dict]:
     if not entries:
         logging.warning("No entries provided for transformation.")
         return []
+    logging.info(f"Starting transformation of {len(entries)} entries")
     cleaned_entries = []
     last_ingested = datetime.now().date()
     for entry in entries:
-        entry = format_datetime_fields(
-            entry, ['updated_parsed', 'published_parsed'])
-        entry = format_key_labels(entry)
-        entry = extract_key_information(entry)
-        entry = format_feed_entries(entry)
-        entry['last_ingested'] = last_ingested
-        cleaned_entries.append(entry)
-    logging.info(f"Transformed {len(cleaned_entries)} entries")
+        try:
+            entry = format_datetime_fields(
+                entry, ['updated_parsed', 'published_parsed'])
+            entry = format_key_labels(entry)
+            entry = extract_key_information(entry)
+            entry = format_feed_entries(entry)
+            entry['last_ingested'] = last_ingested
+            cleaned_entries.append(entry)
+        except Exception as e:
+            trial_id = entry.get('id', 'N/A')
+            logging.warning(f"Failed to transform entry {trial_id}: {e}")
+    logging.info(f"Successfully transformed {len(cleaned_entries)} entries")
     return cleaned_entries
 
 
@@ -109,6 +125,6 @@ if __name__ == "__main__":
     entries = extract()
 
     cleaned_entries = transform(entries)
-    print(cleaned_entries[0])
+    # print(cleaned_entries[0])
 
     # print(extract_key_information(format_key_labels(entries[1])))
