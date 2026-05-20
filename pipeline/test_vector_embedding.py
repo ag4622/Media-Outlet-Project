@@ -4,6 +4,7 @@ from decimal import Decimal
 from vector_embedding import (
     get_rag_text_chunk, get_embedding, append_embedding
 )
+import pytest
 
 
 def test_get_rag_text_chunk():
@@ -77,10 +78,8 @@ def test_get_embedding():
 def test_get_embedding_empty_text():
     """Test get_embedding with empty text input."""
     text = ""
-    embedding = get_embedding(text)
-    assert isinstance(embedding, list)
-    assert all(isinstance(x, Decimal) for x in embedding)
-    assert len(embedding) == 512
+    with pytest.raises(ValueError, match="Input text for embedding is empty."):
+        embedding = get_embedding(text)
 
 
 def test_append_embedding():

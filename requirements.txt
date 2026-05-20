@@ -1,4 +1,3 @@
 pylint
 pytest
 boto3
-feedparser
