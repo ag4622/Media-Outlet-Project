@@ -91,3 +91,13 @@ resource "aws_iam_role_policy_attachment" "attach_logs_policy" {
   role       = aws_iam_role.c23_etl_lambda_role.name
   policy_arn = aws_iam_policy.lambda_logs_policy.arn
 }
+
+
+resource "aws_ecr_repository" "lambda_etl_ecr" {
+  name                 = "c23-abyssopelagic-lambda-ecr"
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
