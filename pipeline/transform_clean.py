@@ -20,21 +20,22 @@ def remove_html_tags(text: str) -> str:
     return clean_text
 
 
-def format_feed_entries(entries: list) -> list:
+def remove_fields(entry: dict, fields_to_remove: list) -> dict:
+    """Remove specified fields from the entry dictionary."""
+    for field in fields_to_remove:
+        entry.pop(field, None)
+    return entry
+
+
+def format_feed_entries(entry: dict) -> dict:
     """Format the entry data to remove HTML tags like <b>, </b>, <br /> from feed entries."""
-    formatted_entries = []
-    for entry in entries:
-        # Remove HTML tags from summary fields
-        if 'summary' in entry:
-            entry['summary'] = remove_html_tags(entry['summary'])
-        # Remove HTML tags from title fields if needed
-        if 'title' in entry:
-            entry['title'] = remove_html_tags(entry['title'])
-        entry.pop('title_detail', None)
-        entry.pop('summary_detail', None)
-        entry.pop('links', None)
-        formatted_entries.append(entry)
-    return formatted_entries
+    # Remove HTML tags from summary fields
+    if 'summary' in entry:
+        entry['summary'] = remove_html_tags(entry['summary'])
+    # Remove HTML tags from title fields if needed
+    if 'title' in entry:
+        entry['title'] = remove_html_tags(entry['title'])
+    return entry
 
 
 def transform(entries: list) -> list[dict]:
@@ -42,7 +43,11 @@ def transform(entries: list) -> list[dict]:
     if not entries:
         logging.warning("No entries provided for transformation.")
         return []
-    cleaned_entries = format_feed_entries(entries)
+    cleaned_entries = []
+    for entry in entries:
+        entry = format_feed_entries(entry)
+        entry = remove_fields(entry, ['links', 'tags', 'authors'])
+        cleaned_entries.append(entry)
     return cleaned_entries
 
 
