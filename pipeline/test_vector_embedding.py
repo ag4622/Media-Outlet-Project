@@ -79,7 +79,7 @@ def test_get_embedding_empty_text():
     """Test get_embedding with empty text input."""
     text = ""
     with pytest.raises(ValueError, match="Input text for embedding is empty."):
-        embedding = get_embedding(text)
+        get_embedding(text)
 
 
 def test_append_embedding():
