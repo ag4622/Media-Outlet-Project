@@ -1,10 +1,10 @@
 """Adds vector embedding to the pipeline."""
 import logging
-import boto3
 import json
 from decimal import Decimal
+import boto3
 
-# configure runtime client to be 512 dimensions
+bedrock_runtime = boto3.client('bedrock-runtime')
 
 
 def setup_logging():
@@ -84,7 +84,6 @@ def embedding_pipeline(data: dict) -> dict:
 
 
 if __name__ == "__main__":
-    bedrock_runtime = boto3.client('bedrock-runtime')
     trial_data = {
         "trial_id": "NCT12345678",
         "title": "A Study on the Effects of XYZ Drug",
