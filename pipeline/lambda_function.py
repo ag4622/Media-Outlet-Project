@@ -1,11 +1,11 @@
-"""Lambda handler that processes clinical trial data, 
+"""Lambda handler that processes clinical trial data,
 cleans it, generates embeddings, and stores results in DynamoDB."""
 
 import logging
 from extract import extract
 from transform_clean import transform
 from vector_embedding import embedding_pipeline
-from load import load
+from loading import load
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
