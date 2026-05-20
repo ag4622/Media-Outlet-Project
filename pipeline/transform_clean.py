@@ -1,4 +1,4 @@
-"""ETL pipeline for transforming clinical trials RSS feed data.
+"""Transform stage of ETL pipeline for transforming clinical trials RSS feed data.
 
 Provides functions for formatting, cleaning, and extracting structured
 information from raw RSS feed entries.
@@ -17,7 +17,7 @@ def format_datetime_fields(entry: dict, datetime_fields: list) -> dict:
             field_name = field[:field.index('_')]
             entry[field_name] = datetime.fromtimestamp(
                 mktime(entry[field])).date()
-        except (KeyError, ValueError, OSError, OverflowError):
+        except (KeyError, ValueError, OSError, OverflowError, TypeError):
             logging.warning(
                 "Could not convert field '%s' to date for entry ID: %s",
                 field, entry.get('trial_id', 'N/A'))
@@ -119,7 +119,7 @@ def transform(entries: list) -> list[dict]:
             entry = format_feed_entries(entry)
             entry['last_ingested'] = last_ingested
             result.append(entry)
-        except (KeyError, ValueError, AttributeError) as e:
+        except (KeyError, ValueError, AttributeError, TypeError) as e:
             trial_id = entry.get('id', 'N/A')
             logging.warning("Failed to transform entry %s: %s", trial_id, e)
     logging.info("Successfully transformed %d entries", len(result))
