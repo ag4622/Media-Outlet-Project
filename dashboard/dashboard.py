@@ -140,6 +140,88 @@ def get_trial_counts_by_category(df, category):
     ).sort_values('Trial Count', ascending=False)
 
 
+def prepare_pie_chart_data(df_counts, top_n=10):
+    """Prepare data for pie chart with 'Other' grouping for items beyond top_n."""
+    if df_counts.empty:
+        return df_counts
+
+    top_items = df_counts.head(top_n)
+    other_count = df_counts.iloc[top_n:]['Trial Count'].sum()
+
+    if other_count > 0:
+        category_col = df_counts.columns[0]
+        other_row = pd.DataFrame({
+            category_col: ['Other'],
+            'Trial Count': [other_count]
+        })
+        pie_data = pd.concat([top_items, other_row], ignore_index=True)
+    else:
+        pie_data = top_items
+
+    return pie_data
+
+
+def get_top_and_bottom(df_counts, n=10):
+    """Get top N and bottom N items from counts."""
+    if df_counts.empty:
+        return pd.DataFrame(), pd.DataFrame()
+
+    top = df_counts.head(n)
+    bottom = df_counts.tail(n).iloc[::-1]  # Reverse for better visualization
+
+    return top, bottom
+
+
+def categorize_intervention(intervention_text):
+    """Categorize intervention by type based on text patterns."""
+    intervention_lower = intervention_text.lower()
+
+    if 'drug' in intervention_lower or 'medication' in intervention_lower:
+        return 'Drug'
+    elif 'dietary' in intervention_lower or 'supplement' in intervention_lower or 'vitamin' in intervention_lower:
+        return 'Dietary Supplement'
+    elif 'procedure' in intervention_lower or 'surgery' in intervention_lower or 'behavioral' in intervention_lower:
+        return 'Procedure'
+    elif 'device' in intervention_lower:
+        return 'Device'
+    elif 'radiation' in intervention_lower:
+        return 'Radiation'
+    else:
+        return 'Other'
+
+
+def is_university_sponsor(sponsor_name):
+    """Check if sponsor is a university based on keywords."""
+    university_keywords = ['university', 'college',
+                           'institute', 'school of', 'medical center', 'hospital']
+    sponsor_lower = sponsor_name.lower()
+    return any(keyword in sponsor_lower for keyword in university_keywords)
+
+
+def filter_sponsors_by_type(df_counts, include_universities=True):
+    """Filter sponsors based on university inclusion."""
+    if df_counts.empty:
+        return df_counts
+
+    if include_universities:
+        return df_counts
+    else:
+        # Filter out universities
+        sponsor_col = df_counts.columns[0]
+        return df_counts[~df_counts[sponsor_col].apply(is_university_sponsor)]
+
+
+def filter_interventions_by_type(df_counts, intervention_type='All'):
+    """Filter interventions by type."""
+    if df_counts.empty or intervention_type == 'All':
+        return df_counts
+
+    intervention_col = df_counts.columns[0]
+    filtered = df_counts[df_counts[intervention_col].apply(
+        lambda x: categorize_intervention(x) == intervention_type)]
+    return filtered.sort_values('Trial Count', ascending=False)
+
+
 def dashboard():
     st.set_page_config(page_title="Clinical Trials Dashboard", layout="wide")
     st.title("Clinical Trials Dashboard")
@@ -198,61 +280,159 @@ def dashboard():
         condition_counts = get_trial_counts_by_category(
             filtered_df, 'conditions')
         if not condition_counts.empty:
-            fig = px.bar(
-                condition_counts,
-                x='Trial Count',
-                y='Conditions',
-                orientation='h',
-                title="Number of Trials by Condition",
-                labels={'Conditions': 'Medical Condition',
-                        'Trial Count': 'Number of Trials'},
-                color='Trial Count',
-                color_continuous_scale='viridis'
-            )
-            st.plotly_chart(fig, width='stretch')
-            st.dataframe(condition_counts, width='stretch')
+            top_conditions, bottom_conditions = get_top_and_bottom(
+                condition_counts, n=10)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("### Top 10 Conditions")
+                if not top_conditions.empty:
+                    fig_top = px.bar(
+                        top_conditions,
+                        x='Trial Count',
+                        y='Conditions',
+                        orientation='h',
+                        title="Top 10 Conditions",
+                        labels={'Conditions': 'Condition',
+                                'Trial Count': 'Number of Trials'},
+                        color='Trial Count',
+                        color_continuous_scale='viridis'
+                    )
+                    st.plotly_chart(fig_top, width='stretch')
+
+            with col2:
+                st.markdown("### Bottom 10 Conditions")
+                if not bottom_conditions.empty:
+                    fig_bottom = px.bar(
+                        bottom_conditions,
+                        x='Trial Count',
+                        y='Conditions',
+                        orientation='h',
+                        title="Bottom 10 Conditions",
+                        labels={'Conditions': 'Condition',
+                                'Trial Count': 'Number of Trials'},
+                        color='Trial Count',
+                        color_continuous_scale='plasma'
+                    )
+                    st.plotly_chart(fig_bottom, width='stretch')
         else:
             st.info("No data available for the selected filters.")
 
     with tab2:
         st.subheader("Trial Counts by Intervention")
+
+        # Intervention type filter
         intervention_counts = get_trial_counts_by_category(
             filtered_df, 'interventions')
+
         if not intervention_counts.empty:
-            fig = px.bar(
-                intervention_counts,
-                x='Trial Count',
-                y='Interventions',
-                orientation='h',
-                title="Number of Trials by Intervention",
-                labels={'Interventions': 'Intervention Type',
-                        'Trial Count': 'Number of Trials'},
-                color='Trial Count',
-                color_continuous_scale='plasma'
+            # Get unique intervention types
+            all_types = sorted(intervention_counts['Interventions'].apply(
+                categorize_intervention).unique().tolist())
+            intervention_type = st.selectbox(
+                "Filter by Intervention Type",
+                options=['All'] + all_types,
+                help="Select intervention type to filter the data"
             )
-            st.plotly_chart(fig, width='stretch')
-            st.dataframe(intervention_counts, width='stretch')
+
+            filtered_interventions = filter_interventions_by_type(
+                intervention_counts, intervention_type)
+
+            if not filtered_interventions.empty:
+                top_interventions, bottom_interventions = get_top_and_bottom(
+                    filtered_interventions, n=10)
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### Top 10 Interventions")
+                    if not top_interventions.empty:
+                        fig_top = px.bar(
+                            top_interventions,
+                            x='Trial Count',
+                            y='Interventions',
+                            orientation='h',
+                            title="Top 10 Interventions",
+                            labels={'Interventions': 'Intervention',
+                                    'Trial Count': 'Number of Trials'},
+                            color='Trial Count',
+                            color_continuous_scale='viridis'
+                        )
+                        st.plotly_chart(fig_top, width='stretch')
+
+                with col2:
+                    st.markdown("### Bottom 10 Interventions")
+                    if not bottom_interventions.empty:
+                        fig_bottom = px.bar(
+                            bottom_interventions,
+                            x='Trial Count',
+                            y='Interventions',
+                            orientation='h',
+                            title="Bottom 10 Interventions",
+                            labels={'Interventions': 'Intervention',
+                                    'Trial Count': 'Number of Trials'},
+                            color='Trial Count',
+                            color_continuous_scale='plasma'
+                        )
+                        st.plotly_chart(fig_bottom, width='stretch')
+            else:
+                st.info("No data available for the selected intervention type.")
         else:
             st.info("No data available for the selected filters.")
 
     with tab3:
         st.subheader("Trial Counts by Sponsor")
+
+        # Sponsor type filter
+        include_universities = st.checkbox(
+            "Include University Sponsors", value=True)
+
         sponsor_counts = get_trial_counts_by_category(filtered_df, 'sponsors')
+
         if not sponsor_counts.empty:
-            fig = px.bar(
-                sponsor_counts.head(20),  # Show top 20 sponsors
-                x='Trial Count',
-                y='Sponsors',
-                orientation='h',
-                title="Top 20 Sponsors by Trial Count",
-                labels={'Sponsors': 'Sponsor',
-                        'Trial Count': 'Number of Trials'},
-                color='Trial Count',
-                color_continuous_scale='blues'
-            )
-            fig.update_layout(yaxis_tickangle=0)
-            st.plotly_chart(fig, width='stretch')
-            st.dataframe(sponsor_counts, width='stretch')
+            filtered_sponsors = filter_sponsors_by_type(
+                sponsor_counts, include_universities)
+
+            if not filtered_sponsors.empty:
+                top_sponsors, bottom_sponsors = get_top_and_bottom(
+                    filtered_sponsors, n=10)
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### Top 10 Sponsors")
+                    if not top_sponsors.empty:
+                        fig_top = px.bar(
+                            top_sponsors,
+                            x='Trial Count',
+                            y='Sponsors',
+                            orientation='h',
+                            title="Top 10 Sponsors",
+                            labels={'Sponsors': 'Sponsor',
+                                    'Trial Count': 'Number of Trials'},
+                            color='Trial Count',
+                            color_continuous_scale='viridis'
+                        )
+                        st.plotly_chart(fig_top, width='stretch')
+
+                with col2:
+                    st.markdown("### Bottom 10 Sponsors")
+                    if not bottom_sponsors.empty:
+                        fig_bottom = px.bar(
+                            bottom_sponsors,
+                            x='Trial Count',
+                            y='Sponsors',
+                            orientation='h',
+                            title="Bottom 10 Sponsors",
+                            labels={'Sponsors': 'Sponsor',
+                                    'Trial Count': 'Number of Trials'},
+                            color='Trial Count',
+                            color_continuous_scale='plasma'
+                        )
+                        st.plotly_chart(fig_bottom, width='stretch')
+            else:
+                st.info("No sponsors match the current filter.")
         else:
             st.info("No data available for the selected filters.")
 
