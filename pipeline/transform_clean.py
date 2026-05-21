@@ -73,7 +73,6 @@ def extract_key_information(entry: dict) -> dict:
         has_content = part[1].strip()
         split_summary[index][1] = part[1].lstrip(
             ': ').rstrip('\n<br />').split('; ')
-        print(part)
         if part[0].lower() in key_info:
             entry[part[0].lower()] = split_summary[index][1]
         else:
