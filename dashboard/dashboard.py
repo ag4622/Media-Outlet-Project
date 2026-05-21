@@ -316,6 +316,9 @@ def dashboard():
                         color_continuous_scale='plasma'
                     )
                     st.plotly_chart(fig_bottom, width='stretch')
+            
+            with st.expander("View All Conditions"):
+                st.dataframe(condition_counts, width='stretch')
         else:
             st.info("No data available for the selected filters.")
 
@@ -376,6 +379,9 @@ def dashboard():
                             color_continuous_scale='plasma'
                         )
                         st.plotly_chart(fig_bottom, width='stretch')
+                
+                with st.expander("View All Interventions"):
+                    st.dataframe(filtered_interventions, width='stretch')
             else:
                 st.info("No data available for the selected intervention type.")
         else:
@@ -431,6 +437,9 @@ def dashboard():
                             color_continuous_scale='plasma'
                         )
                         st.plotly_chart(fig_bottom, width='stretch')
+                
+                with st.expander("View All Sponsors"):
+                    st.dataframe(filtered_sponsors, width='stretch')
             else:
                 st.info("No sponsors match the current filter.")
         else:
