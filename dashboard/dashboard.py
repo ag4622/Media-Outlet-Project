@@ -5,20 +5,23 @@ import pandas as pd
 import awswrangler as wr
 import boto3
 
+# Initialize DynamoDB resource at module level
+dynamodb = boto3.resource('dynamodb', region_name='eu-west-2')
+table = dynamodb.Table('c23-ClinicalTrialTracker')
+
 
 @st.cache_data
 def load_data(table_name="c23-ClinicalTrialTracker"):
     """Load clinical trails data from the dynamodb table."""
-    dynamodb = boto3.client('dynamodb')
     all_items = []
     last_evaluated_key = None
 
     while True:
-        scan_kwargs = {'TableName': table_name}
+        scan_kwargs = {}
         if last_evaluated_key:
             scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
 
-        response = dynamodb.scan(**scan_kwargs)
+        response = table.scan(**scan_kwargs)
         all_items.extend(response.get('Items', []))
 
         last_evaluated_key = response.get('LastEvaluatedKey')
@@ -32,19 +35,17 @@ def load_data(table_name="c23-ClinicalTrialTracker"):
 @st.cache_data
 def get_trials_sponsors():
     """Get all trial IDs and sponsors with pagination."""
-    dynamodb = boto3.client('dynamodb')
     all_items = []
     last_evaluated_key = None
 
     while True:
         scan_kwargs = {
-            'TableName': 'c23-ClinicalTrialTracker',
             'ProjectionExpression': 'trial_id, sponsors'
         }
         if last_evaluated_key:
             scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
 
-        response = dynamodb.scan(**scan_kwargs)
+        response = table.scan(**scan_kwargs)
         all_items.extend(response.get('Items', []))
 
         last_evaluated_key = response.get('LastEvaluatedKey')
@@ -55,7 +56,7 @@ def get_trials_sponsors():
 
 
 def get_sponsors_count():
-    """Get count of sponsors across all trials."""
+    """Get count of sponsors across all trials. Needs editing"""
     df = get_trials_sponsors()
     sponsor_counts = {}
     for sponsors in df['sponsors']:
