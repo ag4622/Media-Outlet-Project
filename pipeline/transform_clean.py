@@ -76,7 +76,8 @@ def extract_key_information(entry: dict) -> dict:
         if part[0].lower() in key_info:
             entry[part[0].lower()] = split_summary[index][1]
         else:
-            if len(part) > 1 and has_content:
+            # For status, check if part[0] (the label) has content
+            if part[0].strip():
                 entry['status'] = part[0]
     return entry
 
