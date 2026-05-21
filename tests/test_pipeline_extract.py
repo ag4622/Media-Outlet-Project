@@ -1,6 +1,7 @@
-from extract import fetch_clinical_trials_rss, extract
-import pytest
+"""Tests for extract.py."""
+
 from unittest.mock import patch, MagicMock
+from extract import fetch_clinical_trials_rss, extract
 
 
 class TestFetchClinicalTrialsRSS:

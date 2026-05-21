@@ -131,7 +131,7 @@ class TestFormatKeyLabels:
 
     def test_empty_entry(self):
         """Test empty entry returns empty dict."""
-        assert format_key_labels({}) == {}
+        assert not format_key_labels({})
 
 
 class TestExtractKeyInformation:
@@ -186,7 +186,6 @@ class TestTransform:
     def test_adds_last_ingested(self):
         """Test last_ingested timestamp is added."""
         struct_t = struct_time((2026, 5, 19, 4, 0, 0, 1, 139, 0))
-        today = date.today()
         result = transform([{
             'id': 'NCT123',
             'summary': 'Test',
@@ -197,7 +196,7 @@ class TestTransform:
 
     def test_empty_input_returns_empty(self):
         """Test returns empty list for empty input."""
-        assert transform([]) == []
+        assert not transform([])
 
     def test_handles_multiple_entries(self):
         """Test transforms multiple entries correctly."""
