@@ -1,4 +1,4 @@
-from RAG.rag_pipeline import ask_rag
+from rag.rag_pipeline import ask_rag
 import streamlit as st
 
 
