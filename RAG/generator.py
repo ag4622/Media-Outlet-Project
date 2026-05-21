@@ -7,7 +7,6 @@ import json
 import boto3
 
 
-
 def setup_logging():
     """Set up logging configuration."""
     logging.basicConfig(
@@ -26,7 +25,7 @@ bedrock_runtime = boto3.client(
 
 def get_prompt(user_identity: str = 'investor') -> str:
     """Fetch system prompt based on user identity."""
-    with open(f"prompts/{user_identity}.txt", "r", encoding="utf-8") as f:
+    with open(f"./RAG/prompts/{user_identity}.txt", "r", encoding="utf-8") as f:
         return f.read()
 
 

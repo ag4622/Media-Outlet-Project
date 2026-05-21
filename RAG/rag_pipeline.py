@@ -4,9 +4,9 @@
 
 import logging
 
-from embeddings import generate_embedding
-from retrieval import get_candidate_trials, retrieve_relevant_trials
-from generator import build_context, generate_answer
+from RAG.embeddings import generate_embedding
+from RAG.retrieval import get_candidate_trials, retrieve_relevant_trials
+from RAG.generator import build_context, generate_answer
 
 
 def setup_logging():
@@ -46,7 +46,7 @@ def ask_rag(question, user_identity='investor'):
 
 if __name__ == "__main__":
     setup_logging()
-    result = ask_rag("What are the latest diabetes clinical trials?", 'investor')
+    result = ask_rag("What are the most popular drugs being tested?", 'investor')
 
     print("\nQUESTION:\n")
     print(result["question"])
