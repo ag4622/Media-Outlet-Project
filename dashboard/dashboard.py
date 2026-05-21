@@ -280,43 +280,26 @@ def dashboard():
         condition_counts = get_trial_counts_by_category(
             filtered_df, 'conditions')
         if not condition_counts.empty:
-            top_conditions, bottom_conditions = get_top_and_bottom(
+            top_conditions, _ = get_top_and_bottom(
                 condition_counts, n=10)
 
-            col1, col2 = st.columns(2)
+            st.markdown("### Top 10 Conditions")
+            if not top_conditions.empty:
+                # Reverse to show highest at top
+                top_conditions_reversed = top_conditions.iloc[::-1]
+                fig_top = px.bar(
+                    top_conditions_reversed,
+                    x='Trial Count',
+                    y='Conditions',
+                    orientation='h',
+                    title="Top 10 Conditions",
+                    labels={'Conditions': 'Condition',
+                            'Trial Count': 'Number of Trials'},
+                    color='Trial Count',
+                    color_continuous_scale='viridis'
+                )
+                st.plotly_chart(fig_top, width='stretch')
 
-            with col1:
-                st.markdown("### Top 10 Conditions")
-                if not top_conditions.empty:
-                    fig_top = px.bar(
-                        top_conditions,
-                        x='Trial Count',
-                        y='Conditions',
-                        orientation='h',
-                        title="Top 10 Conditions",
-                        labels={'Conditions': 'Condition',
-                                'Trial Count': 'Number of Trials'},
-                        color='Trial Count',
-                        color_continuous_scale='viridis'
-                    )
-                    st.plotly_chart(fig_top, width='stretch')
-
-            with col2:
-                st.markdown("### Bottom 10 Conditions")
-                if not bottom_conditions.empty:
-                    fig_bottom = px.bar(
-                        bottom_conditions,
-                        x='Trial Count',
-                        y='Conditions',
-                        orientation='h',
-                        title="Bottom 10 Conditions",
-                        labels={'Conditions': 'Condition',
-                                'Trial Count': 'Number of Trials'},
-                        color='Trial Count',
-                        color_continuous_scale='plasma'
-                    )
-                    st.plotly_chart(fig_bottom, width='stretch')
-            
             with st.expander("View All Conditions"):
                 st.dataframe(condition_counts, width='stretch')
         else:
@@ -343,43 +326,26 @@ def dashboard():
                 intervention_counts, intervention_type)
 
             if not filtered_interventions.empty:
-                top_interventions, bottom_interventions = get_top_and_bottom(
+                top_interventions, _ = get_top_and_bottom(
                     filtered_interventions, n=10)
 
-                col1, col2 = st.columns(2)
+                st.markdown("### Top 10 Interventions")
+                if not top_interventions.empty:
+                    # Reverse to show highest at top
+                    top_interventions_reversed = top_interventions.iloc[::-1]
+                    fig_top = px.bar(
+                        top_interventions_reversed,
+                        x='Trial Count',
+                        y='Interventions',
+                        orientation='h',
+                        title="Top 10 Interventions",
+                        labels={'Interventions': 'Intervention',
+                                'Trial Count': 'Number of Trials'},
+                        color='Trial Count',
+                        color_continuous_scale='viridis'
+                    )
+                    st.plotly_chart(fig_top, width='stretch')
 
-                with col1:
-                    st.markdown("### Top 10 Interventions")
-                    if not top_interventions.empty:
-                        fig_top = px.bar(
-                            top_interventions,
-                            x='Trial Count',
-                            y='Interventions',
-                            orientation='h',
-                            title="Top 10 Interventions",
-                            labels={'Interventions': 'Intervention',
-                                    'Trial Count': 'Number of Trials'},
-                            color='Trial Count',
-                            color_continuous_scale='viridis'
-                        )
-                        st.plotly_chart(fig_top, width='stretch')
-
-                with col2:
-                    st.markdown("### Bottom 10 Interventions")
-                    if not bottom_interventions.empty:
-                        fig_bottom = px.bar(
-                            bottom_interventions,
-                            x='Trial Count',
-                            y='Interventions',
-                            orientation='h',
-                            title="Bottom 10 Interventions",
-                            labels={'Interventions': 'Intervention',
-                                    'Trial Count': 'Number of Trials'},
-                            color='Trial Count',
-                            color_continuous_scale='plasma'
-                        )
-                        st.plotly_chart(fig_bottom, width='stretch')
-                
                 with st.expander("View All Interventions"):
                     st.dataframe(filtered_interventions, width='stretch')
             else:
@@ -401,43 +367,26 @@ def dashboard():
                 sponsor_counts, include_universities)
 
             if not filtered_sponsors.empty:
-                top_sponsors, bottom_sponsors = get_top_and_bottom(
+                top_sponsors, _ = get_top_and_bottom(
                     filtered_sponsors, n=10)
 
-                col1, col2 = st.columns(2)
+                st.markdown("### Top 10 Sponsors")
+                if not top_sponsors.empty:
+                    # Reverse to show highest at top
+                    top_sponsors_reversed = top_sponsors.iloc[::-1]
+                    fig_top = px.bar(
+                        top_sponsors_reversed,
+                        x='Trial Count',
+                        y='Sponsors',
+                        orientation='h',
+                        title="Top 10 Sponsors",
+                        labels={'Sponsors': 'Sponsor',
+                                'Trial Count': 'Number of Trials'},
+                        color='Trial Count',
+                        color_continuous_scale='viridis'
+                    )
+                    st.plotly_chart(fig_top, width='stretch')
 
-                with col1:
-                    st.markdown("### Top 10 Sponsors")
-                    if not top_sponsors.empty:
-                        fig_top = px.bar(
-                            top_sponsors,
-                            x='Trial Count',
-                            y='Sponsors',
-                            orientation='h',
-                            title="Top 10 Sponsors",
-                            labels={'Sponsors': 'Sponsor',
-                                    'Trial Count': 'Number of Trials'},
-                            color='Trial Count',
-                            color_continuous_scale='viridis'
-                        )
-                        st.plotly_chart(fig_top, width='stretch')
-
-                with col2:
-                    st.markdown("### Bottom 10 Sponsors")
-                    if not bottom_sponsors.empty:
-                        fig_bottom = px.bar(
-                            bottom_sponsors,
-                            x='Trial Count',
-                            y='Sponsors',
-                            orientation='h',
-                            title="Bottom 10 Sponsors",
-                            labels={'Sponsors': 'Sponsor',
-                                    'Trial Count': 'Number of Trials'},
-                            color='Trial Count',
-                            color_continuous_scale='plasma'
-                        )
-                        st.plotly_chart(fig_bottom, width='stretch')
-                
                 with st.expander("View All Sponsors"):
                     st.dataframe(filtered_sponsors, width='stretch')
             else:
