@@ -1,5 +1,8 @@
-import boto3
+"""Python module for retrieval component of RAG pipeline, responsible for
+fetching relevant clinical trials from DynamoDB based on query embeddings."""
+
 import logging
+import boto3
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -12,10 +15,12 @@ dynamodb = boto3.resource(
 table = dynamodb.Table(TABLE_NAME)
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+def setup_logging():
+    """Set up logging configuration."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
 
 
 def decimal_to_float(vector):
@@ -49,11 +54,6 @@ def retrieve_relevant_trials(query_embedding, trials, top_k=TOP_K):
             })
 
         except Exception as e:
-            logging.warning(
-                f"Skipping trial due to error: {e}"
-            )
-    scored_trials.sort(
-        key=lambda x: x["score"],
-        reverse=True
-    )
+            logging.warning("Skipping trial due to error: %s", str(e))
+    scored_trials.sort(key=lambda x: x["score"], reverse=True)
     return scored_trials[:top_k]
