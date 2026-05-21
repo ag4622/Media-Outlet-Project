@@ -11,7 +11,7 @@ table = dynamodb.Table('c23-ClinicalTrialTracker')
 
 
 @st.cache_data(ttl=3600)
-def load_data(table_name="c23-ClinicalTrialTracker") -> pd.DataFrame:
+def load_data() -> pd.DataFrame:
     """Load clinical trails data from the dynamodb table."""
     all_items = []
     last_evaluated_key = None
