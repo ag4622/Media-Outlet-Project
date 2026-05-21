@@ -32,18 +32,18 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-def get_recent_trial_info():
+def get_recent_trial_info(df):
     """Get the trials from that were published today with title and link."""
-    df = load_data()
     most_recent_date = df['published_date'].max()
     recent_trials = df[df['published_date'] ==
                        most_recent_date][['title', 'source_link']].reset_index(drop=True)
     return recent_trials
 
 
-def render_recent_trials():
-    """Render the most recent trials in the dashboard."""
-    recent_trials = get_recent_trial_info()
+def render_recent_trials(df):
+    """Render the most recent trials tab."""
+    st.subheader("Most Recent Trials")
+    recent_trials = get_recent_trial_info(df)
 
     if not recent_trials.empty:
         # Add filter by title
@@ -231,6 +231,129 @@ def filter_interventions_by_type(df_counts, intervention_type='All') -> pd.DataF
     return filtered.sort_values('Trial Count', ascending=False)
 
 
+def render_conditions_tab(filtered_df):
+    """Render the Trials by Condition tab."""
+    st.subheader("Trial Counts by Condition")
+    condition_counts = get_trial_counts_by_category(filtered_df, 'conditions')
+
+    if not condition_counts.empty:
+        top_conditions = get_top_n(condition_counts, n=10)
+        st.markdown("### Top 10 Conditions")
+
+        if not top_conditions.empty:
+            top_conditions_reversed = top_conditions.iloc[::-1]
+            fig_top = px.bar(
+                top_conditions_reversed,
+                x='Trial Count',
+                y='Conditions',
+                orientation='h',
+                title="Top 10 Conditions",
+                labels={'Conditions': 'Condition',
+                        'Trial Count': 'Number of Trials'},
+                color='Trial Count',
+                color_continuous_scale='viridis'
+            )
+            st.plotly_chart(fig_top, width='stretch')
+
+        with st.expander("View All Conditions"):
+            st.dataframe(condition_counts, width='stretch')
+    else:
+        st.info("No data available for the selected filters.")
+
+
+def render_interventions_tab(filtered_df):
+    """Render the Trials by Intervention tab."""
+    st.subheader("Trial Counts by Intervention")
+    intervention_counts = get_trial_counts_by_category(
+        filtered_df, 'interventions')
+
+    if not intervention_counts.empty:
+        all_types = sorted(intervention_counts['Interventions'].apply(
+            categorize_intervention).unique().tolist())
+        intervention_type = st.selectbox(
+            "Filter by Intervention Type",
+            options=['All'] + all_types,
+            help="Select intervention type to filter the data"
+        )
+
+        filtered_interventions = filter_interventions_by_type(
+            intervention_counts, intervention_type)
+
+        if not filtered_interventions.empty:
+            top_interventions = get_top_n(filtered_interventions, n=10)
+            st.markdown("### Top 10 Interventions")
+
+            if not top_interventions.empty:
+                top_interventions_reversed = top_interventions.iloc[::-1]
+                fig_top = px.bar(
+                    top_interventions_reversed,
+                    x='Trial Count',
+                    y='Interventions',
+                    orientation='h',
+                    title="Top 10 Interventions",
+                    labels={'Interventions': 'Intervention',
+                            'Trial Count': 'Number of Trials'},
+                    color='Trial Count',
+                    color_continuous_scale='viridis'
+                )
+                st.plotly_chart(fig_top, width='stretch')
+
+            with st.expander("View All Interventions"):
+                st.dataframe(filtered_interventions, width='stretch')
+        else:
+            st.info("No data available for the selected intervention type.")
+    else:
+        st.info("No data available for the selected filters.")
+
+
+def render_sponsors_tab(filtered_df):
+    """Render the Trials by Sponsor tab."""
+    st.subheader("Trial Counts by Sponsor")
+
+    include_universities = st.checkbox(
+        "Include University Sponsors", value=True)
+    sponsor_counts = get_trial_counts_by_category(filtered_df, 'sponsors')
+
+    if not sponsor_counts.empty:
+        filtered_sponsors = filter_sponsors_by_type(
+            sponsor_counts, include_universities)
+
+        if not filtered_sponsors.empty:
+            top_sponsors = get_top_n(filtered_sponsors, n=10)
+            st.markdown("### Top 10 Sponsors")
+
+            if not top_sponsors.empty:
+                top_sponsors_reversed = top_sponsors.iloc[::-1]
+                fig_top = px.bar(
+                    top_sponsors_reversed,
+                    x='Trial Count',
+                    y='Sponsors',
+                    orientation='h',
+                    title="Top 10 Sponsors",
+                    labels={'Sponsors': 'Sponsor',
+                            'Trial Count': 'Number of Trials'},
+                    color='Trial Count',
+                    color_continuous_scale='viridis'
+                )
+                st.plotly_chart(fig_top, width='stretch')
+
+            with st.expander("View All Sponsors"):
+                st.dataframe(filtered_sponsors, width='stretch')
+        else:
+            st.info("No sponsors match the current filter.")
+    else:
+        st.info("No data available for the selected filters.")
+
+
+def render_trial_data_tab(df, filtered_df):
+    """Render the Trial Data tab."""
+    st.subheader("Latest Clinical Trials")
+    st.dataframe(df.head())
+
+    st.subheader("Filtered Trial Data")
+    st.dataframe(filtered_df, width='stretch')
+
+
 def dashboard():
     """Main function to create the clinical trials dashboard."""
     st.set_page_config(page_title="Clinical Trials Dashboard", layout="wide")
@@ -286,131 +409,19 @@ def dashboard():
     )
 
     with tab1:
-        st.subheader("Trial Counts by Condition")
-        condition_counts = get_trial_counts_by_category(
-            filtered_df, 'conditions')
-        if not condition_counts.empty:
-            top_conditions = get_top_n(condition_counts, n=10)
-
-            st.markdown("### Top 10 Conditions")
-            if not top_conditions.empty:
-                # Reverse to show highest at top
-                top_conditions_reversed = top_conditions.iloc[::-1]
-                fig_top = px.bar(
-                    top_conditions_reversed,
-                    x='Trial Count',
-                    y='Conditions',
-                    orientation='h',
-                    title="Top 10 Conditions",
-                    labels={'Conditions': 'Condition',
-                            'Trial Count': 'Number of Trials'},
-                    color='Trial Count',
-                    color_continuous_scale='viridis'
-                )
-                st.plotly_chart(fig_top, width='stretch')
-
-            with st.expander("View All Conditions"):
-                st.dataframe(condition_counts, width='stretch')
-        else:
-            st.info("No data available for the selected filters.")
+        render_conditions_tab(filtered_df)
 
     with tab2:
-        st.subheader("Trial Counts by Intervention")
-
-        # Intervention type filter
-        intervention_counts = get_trial_counts_by_category(
-            filtered_df, 'interventions')
-
-        if not intervention_counts.empty:
-            # Get unique intervention types
-            all_types = sorted(intervention_counts['Interventions'].apply(
-                categorize_intervention).unique().tolist())
-            intervention_type = st.selectbox(
-                "Filter by Intervention Type",
-                options=['All'] + all_types,
-                help="Select intervention type to filter the data"
-            )
-
-            filtered_interventions = filter_interventions_by_type(
-                intervention_counts, intervention_type)
-
-            if not filtered_interventions.empty:
-                top_interventions = get_top_n(filtered_interventions, n=10)
-
-                st.markdown("### Top 10 Interventions")
-                if not top_interventions.empty:
-                    # Reverse to show highest at top
-                    top_interventions_reversed = top_interventions.iloc[::-1]
-                    fig_top = px.bar(
-                        top_interventions_reversed,
-                        x='Trial Count',
-                        y='Interventions',
-                        orientation='h',
-                        title="Top 10 Interventions",
-                        labels={'Interventions': 'Intervention',
-                                'Trial Count': 'Number of Trials'},
-                        color='Trial Count',
-                        color_continuous_scale='viridis'
-                    )
-                    st.plotly_chart(fig_top, width='stretch')
-
-                with st.expander("View All Interventions"):
-                    st.dataframe(filtered_interventions, width='stretch')
-            else:
-                st.info("No data available for the selected intervention type.")
-        else:
-            st.info("No data available for the selected filters.")
+        render_interventions_tab(filtered_df)
 
     with tab3:
-        st.subheader("Trial Counts by Sponsor")
-
-        # Sponsor type filter
-        include_universities = st.checkbox(
-            "Include University Sponsors", value=True)
-
-        sponsor_counts = get_trial_counts_by_category(filtered_df, 'sponsors')
-
-        if not sponsor_counts.empty:
-            filtered_sponsors = filter_sponsors_by_type(
-                sponsor_counts, include_universities)
-
-            if not filtered_sponsors.empty:
-                top_sponsors = get_top_n(filtered_sponsors, n=10)
-
-                st.markdown("### Top 10 Sponsors")
-                if not top_sponsors.empty:
-                    # Reverse to show highest at top
-                    top_sponsors_reversed = top_sponsors.iloc[::-1]
-                    fig_top = px.bar(
-                        top_sponsors_reversed,
-                        x='Trial Count',
-                        y='Sponsors',
-                        orientation='h',
-                        title="Top 10 Sponsors",
-                        labels={'Sponsors': 'Sponsor',
-                                'Trial Count': 'Number of Trials'},
-                        color='Trial Count',
-                        color_continuous_scale='viridis'
-                    )
-                    st.plotly_chart(fig_top, width='stretch')
-
-                with st.expander("View All Sponsors"):
-                    st.dataframe(filtered_sponsors, width='stretch')
-            else:
-                st.info("No sponsors match the current filter.")
-        else:
-            st.info("No data available for the selected filters.")
+        render_sponsors_tab(filtered_df)
 
     with tab4:
-        st.subheader("Most Recent Trials")
-        render_recent_trials()
+        render_recent_trials(filtered_df)
 
     with tab5:
-        st.subheader("Latest Clinical Trials")
-        st.dataframe(df.head())
-
-        st.subheader("Filtered Trial Data")
-        st.dataframe(filtered_df, width='stretch')
+        render_trial_data_tab(df, filtered_df)
 
 
 if __name__ == "__main__":
