@@ -3,6 +3,7 @@ import logging
 import json
 import os
 from decimal import Decimal
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import boto3
 
 bedrock_runtime = boto3.client(
@@ -79,14 +80,33 @@ def append_embedding(data: dict, embedding: list) -> dict:
 
 
 def embedding_pipeline(data: list[dict]) -> list[dict]:
-    """Complete pipeline to generate and append embeddings to list of data items."""
+    """Complete pipeline to generate and append embeddings to list of data items in parallel."""
     try:
         data_with_embeddings = []
-        for item in data:
-            text_chunk = get_rag_text_chunk(item)
-            embedding = get_embedding(text_chunk)
-            data_with_embedding = append_embedding(item, embedding)
-            data_with_embeddings.append(data_with_embedding)
+
+        # Use ThreadPoolExecutor for parallel processing (up to 5 concurrent requests)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Map each item to a future
+            futures = {
+                executor.submit(
+                    lambda item=item: append_embedding(
+                        item,
+                        get_embedding(get_rag_text_chunk(item))
+                    )
+                ): idx for idx, item in enumerate(data)
+            }
+
+            # Collect results as they complete
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    data_with_embeddings.append(result)
+                    logging.info("Completed embedding for item")
+                except Exception as e:
+                    logging.error(
+                        "Error processing item in parallel: %s", str(e))
+                    raise
+
         return data_with_embeddings
     except Exception as e:
         logging.error("Error in embedding pipeline: %s", str(e))
