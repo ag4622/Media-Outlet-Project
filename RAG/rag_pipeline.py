@@ -39,8 +39,7 @@ def ask_rag(question, user_identity='investor'):
 
     return {
         "question": question,
-        "answer": answer,
-        "retrieved_trials": retrieved_trials
+        "answer": answer
     }
 
 
