@@ -75,19 +75,19 @@ resource "aws_iam_policy" "lambda_logs_policy" {
 
 
 resource "aws_iam_role_policy_attachment" "attach_dynamodb_policy" {
-  role       = aws_iam_role.c23_etl_lambda_role.name
+  role       = aws_iam_role.c23_ClinicalTrialTracker_lambda_role.name
   policy_arn = aws_iam_policy.dynamodb_policy.arn
 }
 
 
 resource "aws_iam_role_policy_attachment" "attach_bedrock_policy" {
-  role       = aws_iam_role.c23_etl_lambda_role.name
+  role       = aws_iam_role.c23_ClinicalTrialTracker_lambda_role.name
   policy_arn = aws_iam_policy.bedrock_policy.arn
 }
 
 
 resource "aws_iam_role_policy_attachment" "attach_logs_policy" {
-  role       = aws_iam_role.c23_etl_lambda_role.name
+  role       = aws_iam_role.c23_ClinicalTrialTracker_lambda_role.name
   policy_arn = aws_iam_policy.lambda_logs_policy.arn
 }
 
@@ -112,7 +112,7 @@ resource "aws_lambda_function" "c23-ClinicalTrialTracker-lambda" {
     command     = ["lambda_function.lambda_handler"]
   }
   memory_size = 512
-  timeout     = 30
+  timeout     = 120
 
   architectures = ["x86_64"]
 }

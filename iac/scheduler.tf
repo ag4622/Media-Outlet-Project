@@ -28,7 +28,7 @@ resource "aws_iam_role_policy" "scheduler_policy" {
         Action = [
           "lambda:InvokeFunction"
         ]
-        Resource = aws_lambda_function.c23_ClinicalTrialTracker_lambda.arn
+        Resource = aws_lambda_function.c23-ClinicalTrialTracker-lambda.arn
       }
     ]
   })
@@ -46,7 +46,7 @@ resource "aws_scheduler_schedule" "eventbridge_schedule" {
   schedule_expression = "cron(0 */6 * * ? *)"
 
   target {
-    arn      = aws_lambda_function.c23_ClinicalTrialTracker_lambda.arn
+    arn      = aws_lambda_function.c23-ClinicalTrialTracker-lambda.arn
     role_arn = aws_iam_role.scheduler_role.arn
   }
 }

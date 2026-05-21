@@ -9,7 +9,7 @@ resource "aws_ecr_repository" "dashboard" {
 
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "ecs-execution-role"
+  name = "c23-abyssopelagic-ecs-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -107,7 +107,7 @@ resource "aws_ecs_task_definition" "dashboard_task" {
 
 resource "aws_ecs_service" "dashboard_service" {
   name            = "c23-dashboard-service"
-  cluster         = aws_ecs_cluster.dashboard_cluster.id
+  cluster         = data.aws_ecs_cluster.cohort_cluster.id
   task_definition = aws_ecs_task_definition.dashboard_task.arn
   launch_type     = "FARGATE"
   desired_count   = 1
