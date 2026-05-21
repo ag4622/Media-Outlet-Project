@@ -39,7 +39,7 @@ def convert_dynamodb_list_to_python(value) -> list:
             if isinstance(item, dict) and 'S' in item:
                 result.append(item['S'])
         return result
-    elif isinstance(value, list):
+    if isinstance(value, list):
         return value
     return []
 

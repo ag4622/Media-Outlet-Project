@@ -36,16 +36,17 @@ def categorize_intervention(intervention_text) -> str:
 
     if 'drug' in intervention_lower or 'medication' in intervention_lower:
         return 'Drug'
-    elif 'dietary' in intervention_lower or 'supplement' in intervention_lower or 'vitamin' in intervention_lower:
+    if ('dietary' in intervention_lower or 'supplement' in intervention_lower
+          or 'vitamin' in intervention_lower):
         return 'Dietary Supplement'
-    elif 'procedure' in intervention_lower or 'surgery' in intervention_lower or 'behavioral' in intervention_lower:
+    if ('procedure' in intervention_lower or 'surgery' in intervention_lower
+          or 'behavioral' in intervention_lower):
         return 'Procedure'
-    elif 'device' in intervention_lower:
+    if 'device' in intervention_lower:
         return 'Device'
-    elif 'radiation' in intervention_lower:
+    if 'radiation' in intervention_lower:
         return 'Radiation'
-    else:
-        return 'Other'
+    return 'Other'
 
 
 def filter_interventions_by_type(df_counts, intervention_type='All') -> pd.DataFrame:
