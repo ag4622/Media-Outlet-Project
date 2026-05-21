@@ -2,6 +2,7 @@
 cleans it, generates embeddings, and stores results in DynamoDB."""
 
 import logging
+import traceback
 from extract import extract
 from transform_clean import transform
 from vector_embedding import embedding_pipeline
@@ -22,25 +23,66 @@ def lambda_handler(event, context) -> dict:
         logger.info("Event: %s", event)
 
         # Step 1: Extract data
-        logger.info("Extracting data...")
-        raw_data = extract()
-        logger.info("Extracted %d records", len(raw_data))
+        try:
+            logger.info("Extracting data from extract.py...")
+            raw_data = extract()
+            logger.info(
+                "Successfully extracted %d records from extract.py", len(raw_data))
+        except Exception as e:
+            logger.error("ERROR in extract.py: %s", str(e), exc_info=True)
+            return {
+                'statusCode': 500,
+                'body': f'Error in extract.py: {str(e)}',
+                'errorFile': 'extract.py',
+                'traceback': traceback.format_exc()
+            }
 
         # Step 2: Transform and clean data
-        logger.info("Transforming and cleaning data...")
-        cleaned_data = transform(raw_data)
-        logger.info("Cleaned %d records", len(cleaned_data))
+        try:
+            logger.info(
+                "Transforming and cleaning data with transform_clean.py...")
+            cleaned_data = transform(raw_data)
+            logger.info(
+                "Successfully cleaned %d records from transform_clean.py", len(cleaned_data))
+        except Exception as e:
+            logger.error("ERROR in transform_clean.py: %s",
+                         str(e), exc_info=True)
+            return {
+                'statusCode': 500,
+                'body': f'Error in transform_clean.py: {str(e)}',
+                'errorFile': 'transform_clean.py',
+                'traceback': traceback.format_exc()
+            }
 
         # Step 3: Generate embeddings and append to data
-        logger.info("Generating embeddings...")
-        data_with_embeddings = embedding_pipeline(cleaned_data)
-        logger.info("Generated embeddings for %d records",
-                    len(data_with_embeddings))
+        try:
+            logger.info("Generating embeddings with vector_embedding.py...")
+            data_with_embeddings = embedding_pipeline(cleaned_data)
+            logger.info("Successfully generated embeddings for %d records from vector_embedding.py",
+                        len(data_with_embeddings))
+        except Exception as e:
+            logger.error("ERROR in vector_embedding.py: %s",
+                         str(e), exc_info=True)
+            return {
+                'statusCode': 500,
+                'body': f'Error in vector_embedding.py: {str(e)}',
+                'errorFile': 'vector_embedding.py',
+                'traceback': traceback.format_exc()
+            }
 
         # Step 4: Load data into DynamoDB
-        logger.info("Loading data to DynamoDB...")
-        load(data_with_embeddings)
-        logger.info("Successfully loaded data to DynamoDB")
+        try:
+            logger.info("Loading data to DynamoDB with load.py...")
+            load(data_with_embeddings)
+            logger.info("Successfully loaded data to DynamoDB from load.py")
+        except Exception as e:
+            logger.error("ERROR in load.py: %s", str(e), exc_info=True)
+            return {
+                'statusCode': 500,
+                'body': f'Error in load.py: {str(e)}',
+                'errorFile': 'load.py',
+                'traceback': traceback.format_exc()
+            }
 
         return {
             'statusCode': 200,
@@ -48,8 +90,11 @@ def lambda_handler(event, context) -> dict:
         }
 
     except Exception as e:
-        logger.error("Error processing data: %s", str(e), exc_info=True)
+        logger.error("Unexpected error in lambda_function.py: %s",
+                     str(e), exc_info=True)
         return {
             'statusCode': 500,
-            'body': f'Error processing data: {str(e)}'
+            'body': f'Unexpected error in lambda_function.py: {str(e)}',
+            'errorFile': 'lambda_function.py',
+            'traceback': traceback.format_exc()
         }

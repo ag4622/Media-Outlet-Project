@@ -1,6 +1,7 @@
 """Python module for loading data into the DynamoDB table."""
 
 import logging
+import os
 import boto3
 from botocore.exceptions import ClientError
 
@@ -24,19 +25,22 @@ def load(data: list[dict]) -> None:
         SK = updated_at
     """
 
-    logging.info("Loading %s items into DynamoDB table %s", len(data), TABLE_NAME)
+    logging.info("Loading %s items into DynamoDB table %s",
+                 len(data), TABLE_NAME)
 
-    db = boto3.resource('dynamodb').Table(TABLE_NAME)
+    db = boto3.resource(
+        'dynamodb',
+        region_name=os.getenv('AWS_REGION', 'eu-west-2')
+    ).Table(TABLE_NAME)
     for item in data:
         logging.debug("Loading item: %s", item)
         try:
             db.put_item(Item=item)
             logging.info(
-                "Inserted trial_id=%s updated_at=%s",
-                item["trial_id"],
-                item["updated_at"],
+                "Inserted trial_id=%s",
+                item.get('trial_id', 'N/A')
             )
         except ClientError as e:
-
             logging.error("DynamoDB ClientError: %s", e)
+
     logging.info("Data loading completed.")

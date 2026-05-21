@@ -1,10 +1,14 @@
 """Adds vector embedding to the pipeline."""
 import logging
 import json
+import os
 from decimal import Decimal
 import boto3
 
-bedrock_runtime = boto3.client('bedrock-runtime')
+bedrock_runtime = boto3.client(
+    'bedrock-runtime',
+    region_name=os.getenv('AWS_REGION', 'eu-west-2')
+)
 
 
 def setup_logging():
@@ -56,7 +60,7 @@ def get_embedding(text: str) -> list:
         )
         response_body = json.loads(response.get('body').read())
         raw_float_vector = response_body.get('embedding')
-        db_compliant_vector = [Decimal(x) for x in raw_float_vector]
+        db_compliant_vector = [Decimal(str(x)) for x in raw_float_vector]
         return db_compliant_vector
 
     except Exception as e:
@@ -74,13 +78,16 @@ def append_embedding(data: dict, embedding: list) -> dict:
         raise
 
 
-def embedding_pipeline(data: dict) -> dict:
-    """Complete pipeline to generate and append embedding to data."""
+def embedding_pipeline(data: list[dict]) -> list[dict]:
+    """Complete pipeline to generate and append embeddings to list of data items."""
     try:
-        text_chunk = get_rag_text_chunk(data)
-        embedding = get_embedding(text_chunk)
-        data_with_embedding = append_embedding(data, embedding)
-        return data_with_embedding
+        data_with_embeddings = []
+        for item in data:
+            text_chunk = get_rag_text_chunk(item)
+            embedding = get_embedding(text_chunk)
+            data_with_embedding = append_embedding(item, embedding)
+            data_with_embeddings.append(data_with_embedding)
+        return data_with_embeddings
     except Exception as e:
         logging.error("Error in embedding pipeline: %s", str(e))
         raise
