@@ -3,6 +3,7 @@ cleans it, generates embeddings, and stores results in DynamoDB."""
 
 import logging
 import traceback
+from botocore.exceptions import ClientError
 from extract import extract
 from transform_clean import transform
 from vector_embedding import embedding_pipeline
@@ -28,7 +29,7 @@ def lambda_handler(event, context) -> dict:
             raw_data = extract()
             logger.info(
                 "Successfully extracted %d records from extract.py", len(raw_data))
-        except Exception as e:
+        except (IOError, ValueError, RuntimeError) as e:
             logger.error("ERROR in extract.py: %s", str(e), exc_info=True)
             return {
                 'statusCode': 500,
@@ -44,7 +45,7 @@ def lambda_handler(event, context) -> dict:
             cleaned_data = transform(raw_data)
             logger.info(
                 "Successfully cleaned %d records from transform_clean.py", len(cleaned_data))
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             logger.error("ERROR in transform_clean.py: %s",
                          str(e), exc_info=True)
             return {
@@ -60,7 +61,7 @@ def lambda_handler(event, context) -> dict:
             data_with_embeddings = embedding_pipeline(cleaned_data)
             logger.info("Successfully generated embeddings for %d records from vector_embedding.py",
                         len(data_with_embeddings))
-        except Exception as e:
+        except (ValueError, RuntimeError, IOError) as e:
             logger.error("ERROR in vector_embedding.py: %s",
                          str(e), exc_info=True)
             return {
@@ -75,7 +76,7 @@ def lambda_handler(event, context) -> dict:
             logger.info("Loading data to DynamoDB with load.py...")
             load(data_with_embeddings)
             logger.info("Successfully loaded data to DynamoDB from load.py")
-        except Exception as e:
+        except (ClientError, ValueError, KeyError) as e:
             logger.error("ERROR in load.py: %s", str(e), exc_info=True)
             return {
                 'statusCode': 500,
@@ -89,7 +90,7 @@ def lambda_handler(event, context) -> dict:
             'body': 'Data processed and loaded successfully.'
         }
 
-    except Exception as e:
+    except (ValueError, KeyError, IOError, RuntimeError, ClientError) as e:
         logger.error("Unexpected error in lambda_function.py: %s",
                      str(e), exc_info=True)
         return {

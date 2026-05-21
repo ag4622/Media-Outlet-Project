@@ -2,4 +2,7 @@ pylint
 pytest
 boto3
 feedparser
+pandas
+streamlit
+plotly
 scikit-learn

@@ -1,10 +1,10 @@
 """Tests for vector_embedding.py."""
 
 from decimal import Decimal
+import pytest
 from vector_embedding import (
     get_rag_text_chunk, get_embedding, append_embedding
 )
-import pytest
 
 
 def test_get_rag_text_chunk():

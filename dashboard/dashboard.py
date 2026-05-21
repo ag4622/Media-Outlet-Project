@@ -17,7 +17,8 @@ def dashboard():
     st.set_page_config(page_title="Clinical Trials Dashboard", layout="wide")
     st.title("Clinical Trials Dashboard")
     st.markdown(
-        "This dashboard displays clinical trials data from clinicaltrials.gov with filtering and analytics.")
+        """This dashboard displays clinical trials data from clinicaltrials.gov
+        with filtering and analytics.""")
 
     # Load data
     df = load_data()

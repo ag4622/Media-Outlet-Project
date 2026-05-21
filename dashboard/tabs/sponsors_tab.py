@@ -45,10 +45,9 @@ def filter_sponsors_by_type(df_counts, include_universities=True) -> pd.DataFram
 
     if include_universities:
         return df_counts
-    else:
-        # Filter out universities
-        sponsor_col = df_counts.columns[0]
-        return df_counts[~df_counts[sponsor_col].apply(is_university_sponsor)]
+    # Filter out universities
+    sponsor_col = df_counts.columns[0]
+    return df_counts[~df_counts[sponsor_col].apply(is_university_sponsor)]
 
 
 def render_sponsors_tab(filtered_df):

@@ -1,7 +1,6 @@
 """Recent Trials tab for the dashboard."""
 
 import streamlit as st
-import pandas as pd
 
 
 def get_recent_trial_info(df):
