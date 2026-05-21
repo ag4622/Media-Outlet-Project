@@ -1,5 +1,4 @@
 """Minimal test suite for transform_clean module."""
-from datetime import date
 from time import struct_time
 from transform_clean import (
     remove_html_tags,

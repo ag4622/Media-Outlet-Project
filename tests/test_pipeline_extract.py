@@ -1,6 +1,6 @@
 """Tests for extract.py."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from extract import fetch_clinical_trials_rss, extract
 
 
