@@ -86,31 +86,6 @@ def render_recent_trials():
         st.info("No recent trials found.")
 
 
-def get_sponsors_count():
-    """Get the count of each sponsor from the DynamoDB table."""
-    df = load_data()[['sponsors', 'trial_id']]
-    sponsor_counts = {}
-    for sponsors_list in df['sponsors']:
-        if isinstance(sponsors_list, list):
-            for sponsor in sponsors_list:
-                sponsor_counts[sponsor] = sponsor_counts.get(sponsor, 0) + 1
-    result_df = pd.DataFrame(list(sponsor_counts.items()),
-                             columns=['Sponsor', 'Count'])
-    return result_df
-
-
-def render_sponsor_counts_chart():
-    """Render a bar chart of sponsor counts using Altair."""
-    sponsor_counts_df = get_sponsors_count()
-    sponsor_counts_df = sponsor_counts_df.sort_values(
-        'Count', ascending=False).reset_index(drop=True).head(10)
-    chart = alt.Chart(sponsor_counts_df).mark_bar().encode(
-        x=alt.X('Sponsor:N', sort=list(sponsor_counts_df['Sponsor'])),
-        y='Count:Q'
-    ).properties(width=600, height=400)
-    st.altair_chart(chart, width='stretch')
-
-
 def dashboard():
     st.title("Clinical Trials Dashboard")
     st.markdown(
@@ -118,9 +93,6 @@ def dashboard():
 
     st.subheader("Most Recent Trials")
     render_recent_trials()
-
-    st.subheader("Sponsor Counts")
-    render_sponsor_counts_chart()
 
 
 if __name__ == "__main__":
