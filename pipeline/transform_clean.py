@@ -69,8 +69,6 @@ def extract_key_information(entry: dict) -> dict:
     for index, part in enumerate(split_summary):
         if len(part) < 2:
             continue
-        # Check if part[1] is non-empty BEFORE converting to list
-        has_content = part[1].strip()
         split_summary[index][1] = part[1].lstrip(
             ': ').rstrip('\n<br />').split('; ')
         if part[0].lower() in key_info:

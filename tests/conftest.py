@@ -1,3 +1,4 @@
+"""Sets up the testing environment for pipeline tests."""
 import sys
 from pathlib import Path
 
