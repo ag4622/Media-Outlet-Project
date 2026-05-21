@@ -5,3 +5,4 @@ feedparser
 pandas
 streamlit
 plotly
+scikit-learn

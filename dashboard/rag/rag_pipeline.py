@@ -4,9 +4,9 @@
 
 import logging
 
-from RAG.embeddings import generate_embedding
-from RAG.retrieval import get_candidate_trials, retrieve_relevant_trials
-from RAG.generator import build_context, generate_answer
+from rag.embeddings import generate_embedding
+from rag.retrieval import get_candidate_trials, retrieve_relevant_trials
+from rag.generator import build_context, generate_answer
 
 
 def setup_logging():
