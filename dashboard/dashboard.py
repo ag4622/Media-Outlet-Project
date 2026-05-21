@@ -2,10 +2,7 @@
 
 import streamlit as st
 import pandas as pd
-import awswrangler as wr
 import boto3
-import altair as alt
-from datetime import datetime
 
 # Initialize DynamoDB resource at module level
 dynamodb = boto3.resource('dynamodb', region_name='eu-west-2')
@@ -13,7 +10,7 @@ table = dynamodb.Table('c23-ClinicalTrialTracker')
 
 
 @st.cache_data
-def load_data(table_name="c23-ClinicalTrialTracker"):
+def load_data():
     """Load clinical trails data from the dynamodb table."""
     all_items = []
     last_evaluated_key = None
@@ -37,7 +34,6 @@ def load_data(table_name="c23-ClinicalTrialTracker"):
 def get_recent_trial_info():
     """Get the trials from that were published today with title and link."""
     df = load_data()
-    today = datetime.now().date().strftime('%Y-%m-%d')
     most_recent_date = df['published_date'].max()
     recent_trials = df[df['published_date'] ==
                        most_recent_date][['title', 'source_link']].reset_index(drop=True)
@@ -87,6 +83,7 @@ def render_recent_trials():
 
 
 def dashboard():
+    """Main function to render the clinical trials dashboard."""
     st.title("Clinical Trials Dashboard")
     st.markdown(
         "This dashboard displays the latest clinical trials data from clinicaltrials.gov.")
