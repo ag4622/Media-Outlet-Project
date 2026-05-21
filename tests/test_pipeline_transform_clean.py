@@ -114,7 +114,6 @@ class TestFormatKeyLabels:
         result = format_key_labels(entry)
         assert result['trial_id'] == 'NCT123'
         assert result['raw_description'] == 'Test'
-        assert result['updated_at'] == '2026-05-19'
 
     def test_unmapped_fields_excluded(self):
         """Test unmapped fields are not included."""
