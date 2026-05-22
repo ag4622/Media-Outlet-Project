@@ -2,6 +2,7 @@
 fetching relevant clinical trials from DynamoDB based on query embeddings."""
 
 import logging
+import os
 import boto3
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -10,7 +11,8 @@ TABLE_NAME = "c23-ClinicalTrialTracker"
 TOP_K = 10
 
 dynamodb = boto3.resource(
-    "dynamodb")
+    "dynamodb", region_name=os.getenv('AWS_REGION', 'eu-west-2')
+)
 
 table = dynamodb.Table(TABLE_NAME)
 
