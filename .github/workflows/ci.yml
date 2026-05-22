@@ -42,4 +42,4 @@ jobs:
           git ls-files '*.py' | xargs --no-run-if-empty pylint --fail-under=9.0
 
       - name: Test
-        run:  pytest tests/ -v --tb=short
+        run:  python -m pytest tests/ -v --tb=short
