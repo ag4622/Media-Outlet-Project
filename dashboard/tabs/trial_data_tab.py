@@ -3,7 +3,7 @@
 import streamlit as st
 
 
-def render_trial_data_tab(df, filtered_df):
+def render_trial_data_tab(filtered_df):
     """Render the Trial Data tab."""
 
     st.subheader("Filtered Trial Data")

@@ -17,12 +17,8 @@ def get_recent_trial_info(df):
         return pd.DataFrame()
 
     df_copy = df.copy()
-    try:
-        df_copy['published_date'] = pd.to_datetime(
-            df_copy['published_date'], errors='coerce')
-    except Exception as e:
-        st.error(f"Error parsing dates: {e}")
-        return pd.DataFrame()
+    df_copy['published_date'] = pd.to_datetime(
+        df_copy['published_date'], errors='coerce')
     most_recent_date = df_copy['published_date'].max()
     if pd.isna(most_recent_date):
         st.error("No valid dates found in published_date column")
