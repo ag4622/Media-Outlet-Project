@@ -2,7 +2,6 @@
 
 import streamlit as st
 import pandas as pd
-from utils import convert_dynamodb_list_to_python
 
 
 def filter_data(df, selected_conditions, selected_interventions, selected_sponsors) -> pd.DataFrame:
@@ -12,7 +11,7 @@ def filter_data(df, selected_conditions, selected_interventions, selected_sponso
     # Filter by conditions
     if selected_conditions:
         def has_condition(conds):
-            conds_list = convert_dynamodb_list_to_python(conds)
+            conds_list = conds if isinstance(conds, list) else []
             return any(c in selected_conditions for c in conds_list)
         filtered_df = filtered_df[filtered_df['conditions'].apply(
             has_condition)]
@@ -20,7 +19,8 @@ def filter_data(df, selected_conditions, selected_interventions, selected_sponso
     # Filter by interventions
     if selected_interventions:
         def has_intervention(interventions):
-            interventions_list = convert_dynamodb_list_to_python(interventions)
+            interventions_list = interventions if isinstance(
+                interventions, list) else []
             return any(i in selected_interventions for i in interventions_list)
         filtered_df = filtered_df[filtered_df['interventions'].apply(
             has_intervention)]
@@ -28,7 +28,7 @@ def filter_data(df, selected_conditions, selected_interventions, selected_sponso
     # Filter by sponsors
     if selected_sponsors:
         def has_sponsor(sponsors):
-            sponsors_list = convert_dynamodb_list_to_python(sponsors)
+            sponsors_list = sponsors if isinstance(sponsors, list) else []
             return any(s in selected_sponsors for s in sponsors_list)
         filtered_df = filtered_df[filtered_df['sponsors'].apply(has_sponsor)]
 
