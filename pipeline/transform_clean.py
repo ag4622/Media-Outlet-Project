@@ -127,8 +127,4 @@ def transform(entries: list) -> list[dict]:
 if __name__ == "__main__":
     setup_logging()
     feed_entries = extract()
-
     transformed_result = transform(feed_entries)
-    print(transformed_result[0])
-
-    # print(extract_key_information(format_key_labels(feed_entries[1])))
