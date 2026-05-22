@@ -1,7 +1,17 @@
-aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 129033205317.dkr.ecr.eu-west-2.amazonaws.com
+AWS_REGION="eu-west-2"
+AWS_ACCOUNT_ID="129033205317"
+REPO_NAME="c23-abyssopelagic-dashboard-ecr"
+IMAGE_TAG="latest"
+PLATFORM="linux/amd64"
 
-docker build -t c23-abyssopelagic-dashboard-ecr --platform="linux/amd64" --provenance=false .
+ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
-docker tag c23-abyssopelagic-dashboard-ecr:latest 129033205317.dkr.ecr.eu-west-2.amazonaws.com/c23-abyssopelagic-dashboard-ecr:latest
+aws ecr get-login-password --region $AWS_REGION | \
+docker login --username AWS --password-stdin $ECR_URI
 
-docker push 129033205317.dkr.ecr.eu-west-2.amazonaws.com/c23-abyssopelagic-dashboard-ecr:latest
+docker build -t $REPO_NAME --platform=$PLATFORM --provenance=false .
+
+docker tag ${REPO_NAME}:${IMAGE_TAG} \
+${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
+
+docker push ${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}
