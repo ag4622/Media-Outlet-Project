@@ -120,7 +120,7 @@ def render_message(role, content):
         st.markdown(content)
 
 
-def handle_user_prompt(prompt, container, user_identity):
+def handle_user_prompt(prompt, container, user_identity="investor"):
     """Process the user prompt, generate a response using RAG, and update the chat history."""
     # Save + render user message
     add_message("user", prompt)
