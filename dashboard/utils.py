@@ -31,23 +31,10 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-def convert_dynamodb_list_to_python(value) -> list:
-    """Convert DynamoDB list format to Python list."""
-    if isinstance(value, dict) and 'L' in value:
-        result = []
-        for item in value['L']:
-            if isinstance(item, dict) and 'S' in item:
-                result.append(item['S'])
-        return result
-    if isinstance(value, list):
-        return value
-    return []
-
-
 def get_unique_values(df, column) -> list:
     """Get unique values from a column that may contain lists."""
     unique_values = set()
     for value in df.get(column, []):
-        items = convert_dynamodb_list_to_python(value)
+        items = value if isinstance(value, list) else []
         unique_values.update(items)
     return sorted(list(unique_values))

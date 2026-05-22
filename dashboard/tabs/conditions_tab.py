@@ -3,14 +3,13 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from utils import convert_dynamodb_list_to_python
 
 
 def get_trial_counts_by_category(df, category) -> pd.DataFrame:
     """Get trial counts grouped by a specific category."""
     counts = {}
     for value in df.get(category, []):
-        items = convert_dynamodb_list_to_python(value)
+        items = value if isinstance(value, list) else []
         for item in items:
             counts[item] = counts.get(item, 0) + 1
 
