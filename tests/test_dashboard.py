@@ -4,7 +4,19 @@ import pytest
 from unittest.mock import patch, MagicMock
 from utils import get_unique_values
 from filtering import filter_data, create_filters
-from metrics import render_summary_metrics
+from metrics import (
+    _collect_unique,
+    _render_total_trials,
+    _render_new_trials,
+    _render_actively_recruiting,
+    _render_unique_sponsors,
+    _render_conditions_covered,
+    _render_completed_trials,
+    _render_withdrawn_withheld,
+    _render_near_market,
+    _render_top_sponsor,
+    render_summary_metrics,
+)
 from dashboard import dashboard
 
 
@@ -179,50 +191,225 @@ class TestCreateFilters:
         mock_filter_data.assert_called_once()
 
 
-class TestRenderSummaryMetrics:
-    """Tests for render_summary_metrics function."""
+class TestCollectUnique:
+    """Tests for _collect_unique helper."""
+
+    def test_collects_from_lists(self):
+        """Test extracting unique values from a Series of lists."""
+        series = pd.Series([['a', 'b'], ['b', 'c']])
+        assert _collect_unique(series) == {'a', 'b', 'c'}
+
+    def test_handles_strings_and_none(self):
+        """Test handling of plain strings and NaN values."""
+        series = pd.Series(['single', None, ['from_list']])
+        result = _collect_unique(series)
+        assert 'single' in result
+        assert 'from_list' in result
+        assert len(result) == 2
+
+
+class TestRenderTotalTrials:
+    """Tests for _render_total_trials."""
 
     @patch('metrics.st')
-    def test_render_summary_metrics_percentage_calculation(self, mock_st):
-        """Test that percentage is calculated correctly."""
+    def test_displays_correct_count(self, mock_st):
+        """Test that total trials count matches DataFrame length."""
         df = pd.DataFrame({'id': [1, 2, 3, 4, 5]})
-        filtered_df = pd.DataFrame({'id': [1, 2]})
-
-        # Mock columns to return 3 MagicMock objects
-        mock_col1, mock_col2, mock_col3 = MagicMock(), MagicMock(), MagicMock()
-        mock_st.columns.return_value = [mock_col1, mock_col2, mock_col3]
-
-        render_summary_metrics(df, filtered_df)
-
-        # Verify st.metric was called 3 times
-        assert mock_st.metric.call_count == 3
+        _render_total_trials(df)
+        mock_st.metric.assert_called_once_with("Total Trials", 5)
 
     @patch('metrics.st')
-    def test_render_summary_metrics_empty_filtered(self, mock_st):
-        """Test with empty filtered DataFrame."""
+    def test_empty_dataframe(self, mock_st):
+        """Test with empty DataFrame shows zero."""
+        df = pd.DataFrame()
+        _render_total_trials(df)
+        mock_st.metric.assert_called_once_with("Total Trials", 0)
+
+
+class TestRenderNewTrials:
+    """Tests for _render_new_trials."""
+
+    @patch('metrics.st')
+    def test_counts_recent_trials(self, mock_st):
+        """Test that only trials within last 30 days are counted."""
+        from datetime import datetime, timedelta
+        recent = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
+        old = '2020-01-01'
+        df = pd.DataFrame({'published_date': [recent, recent, old]})
+        _render_new_trials(df)
+        mock_st.metric.assert_called_once_with("New Trials (30 Days)", 2)
+
+    @patch('metrics.st')
+    def test_no_published_date_column(self, mock_st):
+        """Test graceful handling when published_date column missing."""
+        df = pd.DataFrame({'other': [1, 2]})
+        _render_new_trials(df)
+        mock_st.metric.assert_called_once_with("New Trials (30 Days)", 0)
+
+
+class TestRenderActivelyRecruiting:
+    """Tests for _render_actively_recruiting."""
+
+    @patch('metrics.st')
+    def test_counts_recruiting_status(self, mock_st):
+        """Test that only 'recruiting' status is counted."""
+        status_lower = pd.Series(['recruiting', 'completed', 'recruiting'])
+        _render_actively_recruiting(status_lower, True)
+        mock_st.metric.assert_called_once_with("Actively Recruiting", 2)
+
+    @patch('metrics.st')
+    def test_no_status_column(self, mock_st):
+        """Test returns zero when has_status is False."""
+        _render_actively_recruiting(None, False)
+        mock_st.metric.assert_called_once_with("Actively Recruiting", 0)
+
+
+class TestRenderUniqueSponsors:
+    """Tests for _render_unique_sponsors."""
+
+    @patch('metrics.st')
+    def test_counts_unique_sponsors(self, mock_st):
+        """Test deduplication across rows."""
+        df = pd.DataFrame({
+            'sponsors': [['Pfizer', 'Novartis'], ['Pfizer', 'Roche']]
+        })
+        _render_unique_sponsors(df)
+        mock_st.metric.assert_called_once_with("Unique Sponsors", 3)
+
+    @patch('metrics.st')
+    def test_missing_sponsors_column(self, mock_st):
+        """Test returns zero when sponsors column absent."""
+        df = pd.DataFrame({'other': [1, 2]})
+        _render_unique_sponsors(df)
+        mock_st.metric.assert_called_once_with("Unique Sponsors", 0)
+
+
+class TestRenderConditionsCovered:
+    """Tests for _render_conditions_covered."""
+
+    @patch('metrics.st')
+    def test_counts_unique_conditions(self, mock_st):
+        """Test deduplication of conditions across rows."""
+        df = pd.DataFrame({
+            'conditions': [['cancer', 'diabetes'], ['cancer', 'asthma']]
+        })
+        _render_conditions_covered(df)
+        mock_st.metric.assert_called_once_with("Conditions Covered", 3)
+
+    @patch('metrics.st')
+    def test_missing_conditions_column(self, mock_st):
+        """Test returns zero when conditions column absent."""
+        df = pd.DataFrame({'other': [1]})
+        _render_conditions_covered(df)
+        mock_st.metric.assert_called_once_with("Conditions Covered", 0)
+
+
+class TestRenderCompletedTrials:
+    """Tests for _render_completed_trials."""
+
+    @patch('metrics.st')
+    def test_counts_completed(self, mock_st):
+        """Test that only 'completed' status is counted."""
+        status_lower = pd.Series(['completed', 'recruiting', 'completed'])
+        _render_completed_trials(status_lower, True)
+        mock_st.metric.assert_called_once_with("Completed Trials", 2)
+
+    @patch('metrics.st')
+    def test_no_status(self, mock_st):
+        """Test returns zero when has_status is False."""
+        _render_completed_trials(None, False)
+        mock_st.metric.assert_called_once_with("Completed Trials", 0)
+
+
+class TestRenderWithdrawnWithheld:
+    """Tests for _render_withdrawn_withheld."""
+
+    @patch('metrics.st')
+    def test_counts_both_statuses(self, mock_st):
+        """Test that both withdrawn and withheld are counted."""
+        status_lower = pd.Series(
+            ['withdrawn', 'withheld', 'completed', 'withdrawn'])
+        _render_withdrawn_withheld(status_lower, True)
+        mock_st.metric.assert_called_once()
+        call_args = mock_st.metric.call_args
+        assert call_args[0] == ("Withdrawn / Withheld", 3)
+
+    @patch('metrics.st')
+    def test_no_status(self, mock_st):
+        """Test returns zero when has_status is False."""
+        _render_withdrawn_withheld(None, False)
+        call_args = mock_st.metric.call_args
+        assert call_args[0] == ("Withdrawn / Withheld", 0)
+
+
+class TestRenderNearMarket:
+    """Tests for _render_near_market."""
+
+    @patch('metrics.st')
+    def test_counts_active_not_recruiting(self, mock_st):
+        """Test that 'active, not recruiting' is counted correctly."""
+        status_lower = pd.Series([
+            'active, not recruiting', 'recruiting', 'active, not recruiting'
+        ])
+        _render_near_market(status_lower, True)
+        mock_st.metric.assert_called_once()
+        call_args = mock_st.metric.call_args
+        assert call_args[0] == ("Near-Market Competitors", 2)
+
+    @patch('metrics.st')
+    def test_no_status(self, mock_st):
+        """Test returns zero when has_status is False."""
+        _render_near_market(None, False)
+        call_args = mock_st.metric.call_args
+        assert call_args[0] == ("Near-Market Competitors", 0)
+
+
+class TestRenderTopSponsor:
+    """Tests for _render_top_sponsor."""
+
+    @patch('metrics.st')
+    def test_finds_most_common_sponsor(self, mock_st):
+        """Test that the sponsor with the most trials is identified."""
+        df = pd.DataFrame({
+            'sponsors': [['Pfizer'], ['Pfizer'], ['Roche']]
+        })
+        _render_top_sponsor(df)
+        mock_st.metric.assert_called_once()
+        call_args = mock_st.metric.call_args
+        assert call_args[0] == ("Top Sponsor Trials", 2)
+
+    @patch('metrics.st')
+    def test_no_sponsors_column(self, mock_st):
+        """Test returns zero when sponsors column absent."""
+        df = pd.DataFrame({'other': [1, 2]})
+        _render_top_sponsor(df)
+        mock_st.metric.assert_called_once_with("Top Sponsor Trials", 0)
+
+
+class TestRenderSummaryMetrics:
+    """Tests for the main render_summary_metrics orchestrator."""
+
+    @patch('metrics.st')
+    def test_renders_all_nine_metrics(self, mock_st):
+        """Test that all 9 metrics are rendered."""
+        df = pd.DataFrame({
+            'published_date': ['2025-01-01'],
+            'status': ['recruiting'],
+            'sponsors': [['Pfizer']],
+            'conditions': [['cancer']]
+        })
+        mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock()]
+        render_summary_metrics(df, df)
+        assert mock_st.metric.call_count == 9
+
+    @patch('metrics.st')
+    def test_handles_no_status_column(self, mock_st):
+        """Test graceful handling when status column is missing."""
         df = pd.DataFrame({'id': [1, 2, 3]})
-        filtered_df = pd.DataFrame({'id': []})
-
-        mock_col1, mock_col2, mock_col3 = MagicMock(), MagicMock(), MagicMock()
-        mock_st.columns.return_value = [mock_col1, mock_col2, mock_col3]
-
-        render_summary_metrics(df, filtered_df)
-
-        assert mock_st.metric.call_count == 3
-
-    @patch('metrics.st')
-    def test_render_summary_metrics_zero_total(self, mock_st):
-        """Test with empty total DataFrame (edge case)."""
-        df = pd.DataFrame({'id': []})
-        filtered_df = pd.DataFrame({'id': []})
-
-        mock_col1, mock_col2, mock_col3 = MagicMock(), MagicMock(), MagicMock()
-        mock_st.columns.return_value = [mock_col1, mock_col2, mock_col3]
-
-        render_summary_metrics(df, filtered_df)
-
-        # Should handle division by zero gracefully
-        assert mock_st.metric.call_count == 3
+        mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock()]
+        render_summary_metrics(df, df)
+        # Should still render all 9 metrics with zeros/fallbacks
+        assert mock_st.metric.call_count == 9
 
 
 class TestGetUniqueValuesExtended:
