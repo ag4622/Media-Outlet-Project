@@ -61,7 +61,7 @@ def dashboard():
         render_chatbot_tab()
 
     with tab7:
-        render_status_tracking(df)
+        render_status_tracking(filtered_df)
 
 
 if __name__ == "__main__":
