@@ -220,15 +220,21 @@ def render_status_tracking():
                 st.markdown(
                     f"**Sponsors:** {format_list_field(trial_data.get('sponsors'))}")
                 st.markdown(
-                    f"**Therapeutic Areas:** {format_list_field(trial_data.get('therapeutic_areas'))}")
-
-            with col2:
+                    f"**Conditions:** {format_list_field(trial_data.get('conditions'))}")
                 st.markdown(
                     f"**Interventions:** {format_list_field(trial_data.get('interventions'))}")
+
+            with col2:
                 published_date = trial_data.get('published_date', 'N/A')
                 st.markdown(f"**Published Date:** {published_date}")
-                ingested_date = trial_data.get('ingested_date', 'N/A')
+                ingested_date = trial_data.get('last_ingested', 'N/A')
                 st.markdown(f"**Ingested Date:** {ingested_date}")
+                linked_url = trial_data.get('source_link', 'N/A')
+                if linked_url and linked_url != 'N/A':
+                    st.markdown(
+                        f"**Source Link:** [{linked_url}]({linked_url})")
+                else:
+                    st.markdown("**Source Link:** N/A")
 
             st.divider()
 
