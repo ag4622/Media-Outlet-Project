@@ -23,7 +23,7 @@ STATUS_COLORS = {
 }
 
 
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=3600)
 def load_all_trials() -> pd.DataFrame:
     """Load all clinical trials data from DynamoDB."""
     all_items = []
