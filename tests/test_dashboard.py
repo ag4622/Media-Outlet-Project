@@ -88,60 +88,39 @@ class TestGetUniqueValues:
 class TestFilterData:
     """Tests for filtering trial data."""
 
-    @pytest.fixture
-    def sample_df(self):
-        """Create sample trial data."""
-        return pd.DataFrame({
-            'conditions': [
-                ['cancer', 'diabetes'],
-                ['asthma'],
-                ['diabetes']
-            ],
-            'interventions': [
-                ['drug'],
-                ['surgery'],
-                ['drug']
-            ],
-            'sponsors': [
-                ['pharma_co'],
-                ['hospital'],
-                ['pharma_co']
-            ],
-            'trial_id': ['T1', 'T2', 'T3']
-        })
-
-    def test_no_filters(self, sample_df):
+    def test_no_filters(self, filter_data_sample_df):
         """Test with no filters applied."""
-        result = filter_data(sample_df, [], [], [])
+        result = filter_data(filter_data_sample_df, [], [], [])
         assert len(result) == 3
 
-    def test_filter_by_condition(self, sample_df):
+    def test_filter_by_condition(self, filter_data_sample_df):
         """Test filtering by condition."""
-        result = filter_data(sample_df, ['cancer'], [], [])
+        result = filter_data(filter_data_sample_df, ['cancer'], [], [])
         assert len(result) == 1
         assert result.iloc[0]['trial_id'] == 'T1'
 
-    def test_filter_by_multiple_conditions(self, sample_df):
+    def test_filter_by_multiple_conditions(self, filter_data_sample_df):
         """Test filtering by multiple conditions."""
-        result = filter_data(sample_df, ['cancer', 'asthma'], [], [])
+        result = filter_data(filter_data_sample_df, [
+                             'cancer', 'asthma'], [], [])
         assert len(result) == 2
 
-    def test_filter_by_sponsor(self, sample_df):
+    def test_filter_by_sponsor(self, filter_data_sample_df):
         """Test filtering by sponsor."""
-        result = filter_data(sample_df, [], [], ['hospital'])
+        result = filter_data(filter_data_sample_df, [], [], ['hospital'])
         assert len(result) == 1
         assert result.iloc[0]['trial_id'] == 'T2'
 
-    def test_filter_combined(self, sample_df):
+    def test_filter_combined(self, filter_data_sample_df):
         """Test filtering with multiple criteria."""
-        result = filter_data(sample_df, ['diabetes'], ['drug'], [])
+        result = filter_data(filter_data_sample_df, ['diabetes'], ['drug'], [])
         # T1 and T3 both have diabetes and drug
         assert len(result) == 2
         assert set(result['trial_id']) == {'T1', 'T3'}
 
-    def test_no_matches(self, sample_df):
+    def test_no_matches(self, filter_data_sample_df):
         """Test when filter matches nothing."""
-        result = filter_data(sample_df, ['nonexistent'], [], [])
+        result = filter_data(filter_data_sample_df, ['nonexistent'], [], [])
         assert len(result) == 0
 
     def test_empty_dataframe(self):
@@ -171,25 +150,11 @@ class TestFilterData:
 class TestCreateFilters:
     """Tests for create_filters function."""
 
-    @pytest.fixture
-    def sample_data(self):
-        """Create sample data for testing."""
-        return (
-            pd.DataFrame({
-                'conditions': [['cancer'], ['diabetes']],
-                'interventions': [['drug'], ['surgery']],
-                'sponsors': [['pharma'], ['hospital']]
-            }),
-            ['cancer', 'diabetes'],
-            ['drug', 'surgery'],
-            ['pharma', 'hospital']
-        )
-
     @patch('filtering.st')
     @patch('filtering.filter_data')
-    def test_create_filters_returns_dataframe(self, mock_filter_data, mock_st, sample_data):
+    def test_create_filters_returns_dataframe(self, mock_filter_data, mock_st, filter_create_sample_data):
         """Test that create_filters returns a DataFrame."""
-        df, conds, interventions, sponsors = sample_data
+        df, conds, interventions, sponsors = filter_create_sample_data
         mock_st.sidebar.multiselect.side_effect = [[], [], []]
         mock_filter_data.return_value = df
 
@@ -199,9 +164,9 @@ class TestCreateFilters:
 
     @patch('filtering.st')
     @patch('filtering.filter_data')
-    def test_create_filters_calls_filter_data(self, mock_filter_data, mock_st, sample_data):
+    def test_create_filters_calls_filter_data(self, mock_filter_data, mock_st, filter_create_sample_data):
         """Test that create_filters calls filter_data."""
-        df, conds, interventions, sponsors = sample_data
+        df, conds, interventions, sponsors = filter_create_sample_data
         mock_st.sidebar.multiselect.side_effect = [
             ['cancer'],
             ['drug'],
@@ -314,7 +279,7 @@ class TestGetUniqueValuesExtended:
 class TestFilterDataExtended:
     """Extended tests for filter_data edge cases."""
 
-    def test_filter_preserves_order(self):
+    def test_filter_preserves_order(self, filter_data_sample_df):
         """Test that filtering preserves DataFrame structure."""
         df = pd.DataFrame({
             'conditions': [['a'], ['b'], ['c']],
