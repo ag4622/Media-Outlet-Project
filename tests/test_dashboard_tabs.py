@@ -91,19 +91,12 @@ class TestIsUniversitySponsor:
 class TestFilterSponsorsByType:
     """Tests for filter_sponsors_by_type."""
 
-    @pytest.fixture
-    def sample_df(self):
-        return pd.DataFrame({
-            'Sponsors': ['Harvard University', 'Pfizer Inc', 'Johns Hopkins Medical Center'],
-            'Trial Count': [10, 20, 15]
-        })
-
-    def test_sponsor_filtering(self, sample_df):
+    def test_sponsor_filtering(self, sponsors_sample_df):
         """Test filtering with and without universities."""
         assert len(filter_sponsors_by_type(
-            sample_df, include_universities=True)) == 3
+            sponsors_sample_df, include_universities=True)) == 3
         assert len(filter_sponsors_by_type(
-            sample_df, include_universities=False)) == 1  # Only Pfizer Inc
+            sponsors_sample_df, include_universities=False)) == 1  # Only Pfizer Inc
         assert filter_sponsors_by_type(
             pd.DataFrame(), include_universities=False).empty
 
@@ -161,18 +154,14 @@ class TestGetTrialById:
 class TestFilterInterventionsByType:
     """Tests for filter_interventions_by_type."""
 
-    @pytest.fixture
-    def sample_df(self):
-        return pd.DataFrame({
-            'Interventions': ['Drug therapy', 'Surgical procedure', 'Dietary supplement'],
-            'Trial Count': [50, 30, 20]
-        })
-
-    def test_intervention_filtering(self, sample_df):
+    def test_intervention_filtering(self, interventions_sample_df):
         """Test filtering interventions by type."""
-        assert len(filter_interventions_by_type(sample_df, 'All')) == 3
-        assert len(filter_interventions_by_type(sample_df, 'Drug')) == 1
-        assert len(filter_interventions_by_type(sample_df, 'Unknown')) == 0
+        assert len(filter_interventions_by_type(
+            interventions_sample_df, 'All')) == 3
+        assert len(filter_interventions_by_type(
+            interventions_sample_df, 'Drug')) == 1
+        assert len(filter_interventions_by_type(
+            interventions_sample_df, 'Unknown')) == 0
         assert filter_interventions_by_type(pd.DataFrame(), 'Drug').empty
 
 
