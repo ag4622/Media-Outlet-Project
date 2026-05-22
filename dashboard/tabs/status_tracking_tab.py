@@ -23,28 +23,6 @@ STATUS_COLORS = {
 }
 
 
-@st.cache_data(ttl=3600)
-def load_all_trials() -> pd.DataFrame:
-    """Load all clinical trials data from DynamoDB."""
-    all_items = []
-    last_evaluated_key = None
-
-    while True:
-        scan_kwargs = {}
-        if last_evaluated_key:
-            scan_kwargs['ExclusiveStartKey'] = last_evaluated_key
-
-        response = table.scan(**scan_kwargs)
-        all_items.extend(response.get('Items', []))
-
-        last_evaluated_key = response.get('LastEvaluatedKey')
-        if not last_evaluated_key:
-            break
-
-    df = pd.DataFrame(all_items)
-    return df
-
-
 def get_trial_by_id(df: pd.DataFrame, trial_id: str) -> Optional[Dict]:
     """Get a specific trial by its ID from the cached DataFrame."""
     match = df[df['trial_id'] == trial_id]
@@ -184,11 +162,9 @@ def create_status_timeline_chart(durations: List[Dict]) -> Optional[go.Figure]:
     return fig
 
 
-def render_status_tracking():
+def render_status_tracking(df: pd.DataFrame) -> None:
     """Render the status tracking tab content."""
     st.header("📊 Clinical Trial Status Tracking")
-
-    df = load_all_trials()
 
     if df.empty:
         st.warning("No trial data available.")
