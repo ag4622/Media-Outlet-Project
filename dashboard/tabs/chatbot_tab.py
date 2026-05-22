@@ -3,24 +3,22 @@ import streamlit as st
 
 
 def initialize_chat_state():
+    """Initialize session state variables for chat history and prompt settings."""
 
     if "messages" not in st.session_state:
-
         st.session_state.messages = []
 
     if "prompt_persona" not in st.session_state:
-
         st.session_state.prompt_persona = "investor"
 
     if "use_clinical_prompt" not in st.session_state:
-
         st.session_state.use_clinical_prompt = (
             st.session_state.prompt_persona == "clinical_researcher"
         )
 
 
 def add_message(role, content):
-
+    """Add a message to the session state message history."""
     st.session_state.messages.append({
         "role": role,
         "content": content
@@ -28,9 +26,8 @@ def add_message(role, content):
 
 
 def render_chat_header():
-
+    """Render the header section of the chatbot tab with title and caption."""
     st.subheader("Clinical Trials Assistant")
-
     st.caption(
         "Ask about trials, sponsors, interventions,"
         " conditions, and recent publications."
@@ -39,6 +36,7 @@ def render_chat_header():
 
 
 def render_chat_controls():
+    """Render the control section of the chatbot tab with toggle and clear chat button."""
 
     st.markdown(
         """
@@ -102,7 +100,7 @@ def render_chat_controls():
 
 
 def render_chat_history(container):
-
+    """Render the chat history from session state within the given container."""
     with container:
 
         for message in st.session_state.messages:
@@ -114,19 +112,17 @@ def render_chat_history(container):
 
 
 def render_message(role, content):
-
+    """Render a single message in the chat interface."""
     with st.chat_message(role):
-
         st.markdown(content)
 
 
 def handle_user_prompt(prompt, container, user_identity):
-
+    """Process the user prompt, generate a response using RAG, and update the chat history."""
     # Save + render user message
     add_message("user", prompt)
 
     with container:
-
         render_message("user", prompt)
 
     # Generate assistant response
@@ -162,15 +158,12 @@ def handle_user_prompt(prompt, container, user_identity):
 
 
 def render_chatbot_tab():
-
+    """Main function to render the chatbot tab interface and handle interactions."""
     initialize_chat_state()
-
     render_chat_header()
-
     render_chat_controls()
 
     chat_container = st.container(height=600)
-
     render_chat_history(chat_container)
 
     prompt = st.chat_input(
@@ -178,7 +171,6 @@ def render_chatbot_tab():
     )
 
     if prompt:
-
         handle_user_prompt(
             prompt=prompt,
             container=chat_container,
