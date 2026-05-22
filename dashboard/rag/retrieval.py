@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 TABLE_NAME = "c23-ClinicalTrialTracker"
-TOP_K = 5
+TOP_K = 10
 
 dynamodb = boto3.resource(
     "dynamodb")

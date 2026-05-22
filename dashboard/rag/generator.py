@@ -25,7 +25,7 @@ bedrock_runtime = boto3.client(
 
 def get_prompt(user_identity: str = 'investor') -> str:
     """Fetch system prompt based on user identity."""
-    with open(f"./RAG/prompts/{user_identity}.txt", "r", encoding="utf-8") as f:
+    with open(f"./rag/prompts/{user_identity}.txt", "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -63,6 +63,9 @@ Source Link:
 
 def generate_answer(question, context, user_identity='investor'):
     """Generate answer using Bedrock LLM based on question and retrieved context."""
+    if not question.strip():
+        logging.warning("Received empty question. Returning empty answer.")
+        return ""
     system_prompt = get_prompt(user_identity)
 
     full_prompt = f"""
