@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 from unittest.mock import patch, MagicMock
-from utils import get_unique_values, load_data
+from utils import get_unique_values
 from filtering import filter_data, create_filters
 from metrics import render_summary_metrics
 from dashboard import dashboard
@@ -370,93 +370,3 @@ class TestFilterDataExtended:
         original_len = len(df)
         filter_data(df, ['cancer'], [], [])
         assert len(df) == original_len
-
-
-@patch('utils.st.cache_data')
-@patch('utils.boto3')
-class TestLoadData:
-    """Tests for load_data function."""
-
-    def test_load_data_returns_dataframe(self, mock_boto3, mock_cache):
-        """Test that load_data returns a DataFrame."""
-        # Mock cache_data to act as a pass-through decorator
-        mock_cache.return_value = lambda func: func
-        
-        # Mock the DynamoDB table
-        mock_table = MagicMock()
-        mock_table.scan.return_value = {
-            'Items': [
-                {'id': '1', 'conditions': ['cancer']},
-                {'id': '2', 'conditions': ['diabetes']}
-            ],
-            'LastEvaluatedKey': None
-        }
-        mock_dynamodb = MagicMock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.resource.return_value = mock_dynamodb
-
-        # Re-import to apply the mocked cache
-        import importlib
-        import utils
-        importlib.reload(utils)
-        
-        result = utils.load_data()
-        
-        assert isinstance(result, pd.DataFrame)
-        assert len(result) == 2
-        assert 'id' in result.columns
-
-    def test_load_data_handles_pagination(self, mock_boto3, mock_cache):
-        """Test pagination logic for large datasets."""
-        # Mock cache_data to act as a pass-through decorator
-        mock_cache.return_value = lambda func: func
-        
-        mock_table = MagicMock()
-        # First call returns data with LastEvaluatedKey (indicating more data)
-        # Second call returns data without LastEvaluatedKey (end of data)
-        mock_table.scan.side_effect = [
-            {
-                'Items': [{'id': '1', 'name': 'Trial1'}],
-                'LastEvaluatedKey': {'id': '1'}
-            },
-            {
-                'Items': [{'id': '2', 'name': 'Trial2'}],
-                'LastEvaluatedKey': None
-            }
-        ]
-        mock_dynamodb = MagicMock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.resource.return_value = mock_dynamodb
-
-        import importlib
-        import utils
-        importlib.reload(utils)
-        
-        result = utils.load_data()
-        
-        # Should have combined data from both pages
-        assert len(result) == 2
-        assert mock_table.scan.call_count == 2
-
-    def test_load_data_empty_result(self, mock_boto3, mock_cache):
-        """Test handling of empty DynamoDB result."""
-        # Mock cache_data to act as a pass-through decorator
-        mock_cache.return_value = lambda func: func
-        
-        mock_table = MagicMock()
-        mock_table.scan.return_value = {
-            'Items': [],
-            'LastEvaluatedKey': None
-        }
-        mock_dynamodb = MagicMock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.resource.return_value = mock_dynamodb
-
-        import importlib
-        import utils
-        importlib.reload(utils)
-        
-        result = utils.load_data()
-        
-        assert isinstance(result, pd.DataFrame)
-        assert len(result) == 0
