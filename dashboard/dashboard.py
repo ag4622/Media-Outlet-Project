@@ -10,6 +10,7 @@ from tabs.sponsors_tab import render_sponsors_tab
 from tabs.recent_trials_tab import render_recent_trials
 from tabs.trial_data_tab import render_trial_data_tab
 from tabs.chatbot_tab import render_chatbot_tab
+from tabs.status_tracking_tab import render_status_tracking
 
 
 def dashboard():
@@ -36,9 +37,9 @@ def dashboard():
     render_summary_metrics(df, filtered_df)
 
     # Create tabs for different views
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
         ["Trials by Condition", "Trials by Intervention",
-            "Trials by Sponsor", "Recent Trials", "Trial Data", "Clinical Trials Assistant"]
+            "Trials by Sponsor", "Recent Trials", "Trial Data", "Clinical Trials Assistant", "Status Tracking"]
     )
 
     with tab1:
@@ -58,6 +59,9 @@ def dashboard():
 
     with tab6:
         render_chatbot_tab()
+
+    with tab7:
+        render_status_tracking(filtered_df)
 
 
 if __name__ == "__main__":
