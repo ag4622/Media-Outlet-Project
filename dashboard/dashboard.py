@@ -52,10 +52,10 @@ def dashboard():
         render_sponsors_tab(filtered_df)
 
     with tab4:
-        render_recent_trials(df)
+        render_recent_trials(filtered_df)
 
     with tab5:
-        render_trial_data_tab(df, filtered_df)
+        render_trial_data_tab(filtered_df)
 
     with tab6:
         render_chatbot_tab()
