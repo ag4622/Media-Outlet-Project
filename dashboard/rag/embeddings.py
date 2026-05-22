@@ -3,6 +3,7 @@
 import logging
 import json
 from decimal import Decimal
+import os
 import boto3
 
 
@@ -18,7 +19,8 @@ def setup_logging():
 
 
 bedrock_runtime = boto3.client(
-    "bedrock-runtime"
+    "bedrock-runtime",
+    region_name=os.getenv('AWS_REGION', 'eu-west-2')
 )
 
 
