@@ -7,3 +7,4 @@ pipeline_path = Path(__file__).parent.parent / 'pipeline'
 dashboard_path = Path(__file__).parent.parent / 'dashboard'
 sys.path.insert(0, str(pipeline_path))
 sys.path.insert(0, str(dashboard_path))
+

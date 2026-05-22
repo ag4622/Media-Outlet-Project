@@ -4,6 +4,7 @@
 
 import logging
 import json
+import os
 import boto3
 
 
@@ -19,7 +20,8 @@ EMBED_MODEL = "amazon.titan-embed-text-v2:0"
 LLM_MODEL = "meta.llama3-8b-instruct-v1:0"
 
 bedrock_runtime = boto3.client(
-    "bedrock-runtime"
+    "bedrock-runtime",
+    region_name=os.getenv('AWS_REGION', 'eu-west-2')
 )
 
 
@@ -63,6 +65,9 @@ Source Link:
 
 def generate_answer(question, context, user_identity='investor'):
     """Generate answer using Bedrock LLM based on question and retrieved context."""
+    if not question.strip():
+        logging.warning("Received empty question. Returning empty answer.")
+        return ""
     system_prompt = get_prompt(user_identity)
 
     full_prompt = f"""
