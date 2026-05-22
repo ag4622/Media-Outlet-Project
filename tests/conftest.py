@@ -2,9 +2,10 @@
 import sys
 from pathlib import Path
 
-# Add pipeline and dashboard directories to path so tests can import modules
+# Add pipeline, dashboard, and tabs directories to path so tests can import modules
 pipeline_path = Path(__file__).parent.parent / 'pipeline'
 dashboard_path = Path(__file__).parent.parent / 'dashboard'
+tabs_path = Path(__file__).parent.parent / 'dashboard' / 'tabs'
 sys.path.insert(0, str(pipeline_path))
 sys.path.insert(0, str(dashboard_path))
-
+sys.path.insert(0, str(tabs_path))
