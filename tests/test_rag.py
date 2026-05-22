@@ -1,11 +1,12 @@
 """Tests for the rag modules."""
 
+import json
 from decimal import Decimal
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
-from dashboard.rag import generator, retrieval, embeddings
+from rag import embeddings, generator, retrieval
 
 
 class Testembeddings:
@@ -27,7 +28,7 @@ class Testembeddings:
 
 class Testretrieval:
     """Tests for the retrieval component of RAG pipeline."""
-    @patch('dashboard.rag.retrieval.table')
+    @patch('rag.retrieval.table')
     def test_get_candidate_trials_returns_items(self, mock_table):
         """Should return a list of trials from DynamoDB scan."""
         mock_table.scan.return_value = {"Items": [{"trial_id": "NCT123"}]}
