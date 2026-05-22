@@ -61,7 +61,8 @@ resource "aws_iam_role_policy" "dashboard_task_policy" {
         Action = [
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
-          "dynamodb:GetItem"
+          "dynamodb:GetItem",
+          "dynamodb:Scan"
         ],
         Resource = aws_dynamodb_table.trials_table.arn
       },
@@ -106,7 +107,7 @@ resource "aws_ecs_task_definition" "dashboard_task" {
 
 
 resource "aws_ecs_service" "dashboard_service" {
-  name            = "c23-dashboard-service"
+  name            = "c23-abyssopelagic-dashboard-service"
   cluster         = data.aws_ecs_cluster.cohort_cluster.id
   task_definition = aws_ecs_task_definition.dashboard_task.arn
   launch_type     = "FARGATE"
