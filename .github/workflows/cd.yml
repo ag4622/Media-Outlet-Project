@@ -5,6 +5,7 @@ on:
     workflows: ["CI Workflow"]
     types:
       - completed
+
 env:
   AWS_REGION: eu-west-2
   ECR_REPOSITORY: c23-abyssopelagic-dashboard-ecr
@@ -17,8 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+
+      - name: Checkout CI commit
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -30,17 +34,18 @@ jobs:
       - name: Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
+        
       - name: Build and push image
         id: build
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          TAG: ${{ github.sha }}
+          TAG: ${{ github.event.workflow_run.head_sha }}
         run: |
           IMAGE=$REGISTRY/$ECR_REPOSITORY:$TAG
 
           docker build -t $IMAGE --platform=linux/amd64 --provenance=false .
           docker push $IMAGE
+
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
 
       - name: Force ECS deployment
