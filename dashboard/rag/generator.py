@@ -4,6 +4,7 @@
 
 import logging
 import json
+import os
 import boto3
 
 
@@ -19,7 +20,8 @@ EMBED_MODEL = "amazon.titan-embed-text-v2:0"
 LLM_MODEL = "meta.llama3-8b-instruct-v1:0"
 
 bedrock_runtime = boto3.client(
-    "bedrock-runtime"
+    "bedrock-runtime",
+    region_name=os.getenv('AWS_REGION', 'eu-west-2')
 )
 
 
