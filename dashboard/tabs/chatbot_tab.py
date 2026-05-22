@@ -1,5 +1,7 @@
-from rag.rag_pipeline import ask_rag
+"""RAG tab for dashboard."""
+
 import streamlit as st
+from rag.rag_pipeline import ask_rag
 
 
 def initialize_chat_state():
@@ -31,7 +33,8 @@ def render_chat_header():
     st.caption(
         "Ask about trials, sponsors, interventions,"
         " conditions, and recent publications."
-        " RAG does not store previous conversations, but you can copy-paste relevant info from past chats!"
+        " RAG does not store previous conversations, "
+        "but you can copy-paste relevant info from past chats!"
     )
 
 
