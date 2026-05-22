@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS
 
 on:
   workflow_run:
-    workflows: ["CI"]  
+    workflows: ["CI Workflow"]
     types:
       - completed
 env:
