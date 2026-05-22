@@ -1,4 +1,11 @@
-# Clinical Trial Tracker — Deployment Guide
+# Clinical Trial Tracker — Description and Deployment Guide
+
+## What is this app?
+
+- This application ingests clinical trial data from the clinicaltrial.gov website, cleans it, and embeds the data with associated vectors for use in LLM queries.
+- It then loads this data into a DynamoDB table.
+- This data is then shown to the end user in the form of a streamlit dashboard and LLM chatbot trial tracking application.
+
 
 ## Prerequisites
 
